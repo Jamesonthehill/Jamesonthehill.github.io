@@ -157,26 +157,26 @@
 					<pre class="highlight">
 					  <code>
 					        <span class="c">&lt;!-- Direction Change --&gt;</span>
-					        private void CanvasKeyDown(object sender, KeyEventArgs e) {
-					          if (e.Key == Key.Left &amp;&amp; noLeft == false) {
-					            goRight = goUp = goDown = false;
-					            noRight = noUp = noDown = false;
-					            goLeft = true;
-					            antman.RenderTransform = new RotateTransform(-180, antman.Width / 2, antman.Height / 2); <span class="c">// Left</span>
-					          }
-					          if (e.Key == Key.Right &amp;&amp; noRight == false) {
-					            noLeft = noUp = noDown = false;
-					            goLeft = goUp = goDown = false;
-					            goRight = true;
-					            antman.RenderTransform = new RotateTransform(0, antman.Width / 2, antman.Height / 2); <span class="c">// Right</span>
-					          }
-					          if (e.Key == Key.Up &amp;&amp; noUp == false) {
-					            noRight = noDown = noLeft = false;
-					            goRight = goDown = goLeft = false;
-					            goUp = true;
-					            antman.RenderTransform = new RotateTransform(-90, antman.Width / 2, antman.Height / 2); <span class="c">// Up</span>
-					          }
-					        }
+       private void CanvasKeyDown(object sender, KeyEventArgs e) {
+         if (e.Key == Key.Left &amp;&amp; noLeft == false) {
+           goRight = goUp = goDown = false;
+           noRight = noUp = noDown = false;
+           goLeft = true;
+           antman.RenderTransform = new RotateTransform(-180, antman.Width / 2, antman.Height / 2); <span class="c">// Left</span>
+         }
+         if (e.Key == Key.Right &amp;&amp; noRight == false) {
+           noLeft = noUp = noDown = false;
+           goLeft = goUp = goDown = false;
+           goRight = true;
+           antman.RenderTransform = new RotateTransform(0, antman.Width / 2, antman.Height / 2); <span class="c">// Right</span>
+         }
+         if (e.Key == Key.Up &amp;&amp; noUp == false) {
+           noRight = noDown = noLeft = false;
+           goRight = goDown = goLeft = false;
+           goUp = true;
+           antman.RenderTransform = new RotateTransform(-90, antman.Width / 2, antman.Height / 2); <span class="c">// Up</span>
+         }
+       }
 					  </code>
 				</pre>
 					</div>
