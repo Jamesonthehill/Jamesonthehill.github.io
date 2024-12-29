@@ -152,49 +152,35 @@
 				</div>
 				<div><p style="text-align: center">For enhanced game engagement, the following content has been used as images</p>
 				</div>
-				<p>
-					You can also put regular text between your rows of images. Say you
-					wanted to write a little bit about your project before you posted
-					the rest of the images. You describe how you toiled, sweated, <em>bled</em>
-					for your project, and then… you reveal its glory in the next row of
-					images.
-				</p>
-				</p>
 				<div class="language-html highlighter-rouge">
 					<div class="highlight">
 					<pre class="highlight">
-  <code>
-    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"row justify-content-sm-center"</span><span class="nt">&gt;</span>
-      <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"col-sm-8 mt-3 mt-md-0"</span><span class="nt">&gt;</span>
-        <span class="c">&lt;!-- C# Code Start --&gt;</span>
-        private void CanvasKeyDown(object sender, KeyEventArgs e) {<br>
-          if (e.Key == Key.Left &amp;&amp; noLeft == false) {<br>
-            goRight = goUp = goDown = false;<br>
-            noRight = noUp = noDown = false;<br>
-            goLeft = true;<br>
-            antman.RenderTransform = new RotateTransform(-180, antman.Width / 2, antman.Height / 2); <span class="c">// 왼쪽</span><br>
-          }<br>
-          if (e.Key == Key.Right &amp;&amp; noRight == false) {<br>
-            noLeft = noUp = noDown = false;<br>
-            goLeft = goUp = goDown = false;<br>
-            goRight = true;<br>
-            antman.RenderTransform = new RotateTransform(0, antman.Width / 2, antman.Height / 2); <span class="c">// 오른쪽</span><br>
-          }<br>
-          if (e.Key == Key.Up &amp;&amp; noUp == false) {<br>
-            noRight = noDown = noLeft = false;<br>
-            goRight = goDown = goLeft = false;<br>
-            goUp = true;<br>
-            antman.RenderTransform = new RotateTransform(-90, antman.Width / 2, antman.Height / 2); <span class="c">// 위</span><br>
-          }<br>
-        }
-        <span class="c">&lt;!-- C# Code End --&gt;</span>
-      <span class="nt">&lt;/div&gt;</span>
-      <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"col-sm-4 mt-3 mt-md-0"</span><span class="nt">&gt;</span>
-        {% include figure.liquid path="assets/img/11.jpg" title="example image" class="img-fluid rounded z-depth-1" %}
-      <span class="nt">&lt;/div&gt;</span>
-    <span class="nt">&lt;/div&gt;</span>
-  </code>
-</pre>
+					  <code>
+					    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"row justify-content-sm-center"</span><span class="nt">&gt;</span>
+					      <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"col-sm-8 mt-3 mt-md-0"</span><span class="nt">&gt;</span>
+					        <span class="c">&lt;!-- C# Code Start --&gt;</span>
+					        private void CanvasKeyDown(object sender, KeyEventArgs e) {
+					          if (e.Key == Key.Left &amp;&amp; noLeft == false) {
+					            goRight = goUp = goDown = false;
+					            noRight = noUp = noDown = false;
+					            goLeft = true;
+					            antman.RenderTransform = new RotateTransform(-180, antman.Width / 2, antman.Height / 2); <span class="c">// Left</span>
+					          }
+					          if (e.Key == Key.Right &amp;&amp; noRight == false) {
+					            noLeft = noUp = noDown = false;
+					            goLeft = goUp = goDown = false;
+					            goRight = true;
+					            antman.RenderTransform = new RotateTransform(0, antman.Width / 2, antman.Height / 2); <span class="c">// Right</span>
+					          }
+					          if (e.Key == Key.Up &amp;&amp; noUp == false) {
+					            noRight = noDown = noLeft = false;
+					            goRight = goDown = goLeft = false;
+					            goUp = true;
+					            antman.RenderTransform = new RotateTransform(-90, antman.Width / 2, antman.Height / 2); <span class="c">// Up</span>
+					          }
+					        }
+					  </code>
+				</pre>
 					</div>
 				</div>
 			</article>
