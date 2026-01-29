@@ -1,0 +1,20 @@
+<div id="chat-root" style="height:75vh; border-radius:12px; overflow:hidden;"></div>
+<script src="/assets/chat-widget/chat-widget.js"></script>
+<script src="../../assets/chat-widget/chat-widget.js"></script>
+<script src="../assets/chat-widget/chat-widget.js"></script>
+<script>
+  window.addEventListener("load", () => {
+    console.log("ChatWidget:", window.ChatWidget);
+
+    if (!window.ChatWidget || typeof window.ChatWidget.mount !== "function") {
+      document.getElementById("chat-root").innerHTML =
+              "<div style='padding:16px;font-family:system-ui'>❌ chat-widget.js loaded? → " +
+              (window.ChatWidget ? "ChatWidget exists but mount missing" : "ChatWidget is undefined") +
+              "<br>Check console + Network tab.</div>";
+      return;
+    }
+
+    window.ChatWidget.mount("#chat-root");
+  });
+</script>
+
