@@ -1,43 +1,41 @@
 <div id="chat-root" style="height:75vh; border:1px solid rgba(0,0,0,.2); border-radius:12px;">
-    <div style="padding:12px; font-family:system-ui;">Loading widget…</div>
+    <div style="padding:12px;font-family:system-ui;">Loading chat-widget.js…</div>
 </div>
 
-<script src="/assets/chat-widget/chat-widget.js"></script>
 <script>
-    window.addEventListener("load", () => {
+    (function () {
         const root = document.getElementById("chat-root");
 
-        // 1) 스크립트가 실행돼서 전역이 생겼는지 확인
-        if (!window.ChatWidget) {
-            root.innerHTML =
-                "<div style='padding:12px;font-family:system-ui;color:#b00020'>" +
-                "❌ window.ChatWidget is undefined<br>" +
-                "→ chat-widget.js가 실제로 로드/실행되지 않았거나, 번들이 window.ChatWidget을 만들지 못했습니다.<br>" +
-                "DevTools Console/Network를 확인하세요." +
-                "</div>";
-            console.log("ChatWidget:", window.ChatWidget);
-            return;
-        }
+        // baseurl 문제 피하려고 상대경로 + 캐시버스터
+        const src = "../../assets/chat-widget/chat-widget.js?v=" + Date.now();
 
-        if (typeof window.ChatWidget.mount !== "function") {
-            root.innerHTML =
-                "<div style='padding:12px;font-family:system-ui;color:#b00020'>" +
-                "❌ window.ChatWidget.mount is not a function<br>" +
-                "→ 번들이 mount를 노출하지 않았습니다." +
-                "</div>";
-            console.log("ChatWidget:", window.ChatWidget);
-            return;
-        }
+        const s = document.createElement("script");
+        s.src = src;
 
-        // 2) mount가 터지면 화면에 에러 출력
-        try {
+        s.onload = function () {
+            console.log("✅ Loaded:", src);
+            console.log("ChatWidget after load:", window.ChatWidget);
+
+            if (!window.ChatWidget || typeof window.ChatWidget.mount !== "function") {
+                root.innerHTML =
+                    "<div style='padding:12px;font-family:system-ui;color:#b00020'>" +
+                    "❌ Script loaded, but window.ChatWidget.mount is missing.<br>" +
+                    "→ You are not loading the bundle that exposes window.ChatWidget." +
+                    "</div>";
+                return;
+            }
+
             window.ChatWidget.mount("#chat-root");
-        } catch (e) {
+        };
+
+        s.onerror = function () {
             root.innerHTML =
-                "<pre style='padding:12px;white-space:pre-wrap;font-family:ui-monospace;color:#b00020'>" +
-                "❌ mount() crashed:\n" + (e && e.stack ? e.stack : String(e)) +
-                "</pre>";
-            console.error(e);
-        }
-    });
+                "<div style='padding:12px;font-family:system-ui;color:#b00020'>" +
+                "❌ Failed to load script:<br><code>" + src + "</code><br><br>" +
+                "→ Usually 404 or you opened the page as file:// (not via jekyll serve)." +
+                "</div>";
+        };
+
+        document.head.appendChild(s);
+    })();
 </script>
