@@ -1,16 +1,18 @@
-<h2>Chat</h2>
-<div id="chat-root" style="height:75vh;"></div>
+<!-- ✅ 1) 원하는 위치에 채팅 위젯이 들어갈 컨테이너 -->
+<div class="row justify-content-sm-center">
+    <div class="col-12">
+        <div id="chat-root" style="height:75vh; border-radius:12px; overflow:hidden;"></div>
+    </div>
+</div>
 
-<script src="/assets/chat-widget/chat-widget.js"></script>
-<script>
-  window.ChatWidget.mount("#chat-root");
-</script>
-
-<link rel="stylesheet" href="/assets/chat-widget/chat-widget.css">
+<!-- ✅ 2) 페이지 맨 아래(</body> 직전) 혹은 컨테이너 아래에 스크립트 로드 + 마운트 -->
 <script src="{{ site.baseurl }}/assets/chat-widget/chat-widget.js"></script>
 <script>
-    window.addEventListener("load", () => {
-        window.ChatWidget?.mount?.("#chat-root");
+    window.addEventListener("load", function () {
+        if (!window.ChatWidget || !window.ChatWidget.mount) {
+            console.error("ChatWidget not found. Check script path or build copy step.");
+            return;
+        }
+        window.ChatWidget.mount("#chat-root");
     });
 </script>
-<link rel="stylesheet" href="{{ site.baseurl }}/assets/chat-widget/chat-widget.css">
