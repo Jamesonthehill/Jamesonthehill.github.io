@@ -1,7 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import ChatGPTWidget from "./ChatGPTWidget";
-import "./widget.css";
 
 let root: ReturnType<typeof createRoot> | null = null;
 
