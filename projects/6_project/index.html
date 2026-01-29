@@ -1,18 +1,66 @@
-<!-- ✅ 1) 원하는 위치에 채팅 위젯이 들어갈 컨테이너 -->
+<!-- ChatGPT-style widget mount point -->
 <div class="row justify-content-sm-center">
     <div class="col-12">
         <div id="chat-root" style="height:75vh; border-radius:12px; overflow:hidden;"></div>
     </div>
 </div>
 
-<!-- ✅ 2) 페이지 맨 아래(</body> 직전) 혹은 컨테이너 아래에 스크립트 로드 + 마운트 -->
-<script src="{{ site.baseurl }}/assets/chat-widget/chat-widget.js"></script>
+<!-- (Optional) If you have a css file, keep this. If not, delete this line. -->
+<link rel="stylesheet" href="{{ '/assets/chat-widget/chat-widget.css' | relative_url }}">
+
 <script>
-    window.addEventListener("load", function () {
-        if (!window.ChatWidget || !window.ChatWidget.mount) {
-            console.error("ChatWidget not found. Check script path or build copy step.");
-            return;
+    (function () {
+        const root = document.getElementById("chat-root");
+
+        function showStatus(msg) {
+            root.innerHTML =
+                '<div style="height:100%;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui;">' +
+                '<div style="max-width:720px;width:100%;background:rgba(0,0,0,0.06);border-radius:12px;padding:16px;">' +
+                '<div style="font-weight:700;margin-bottom:8px;">Chat Widget Status</div>' +
+                '<div style="white-space:pre-wrap;line-height:1.4;">' + msg + "</div>" +
+                "</div></div>";
         }
-        window.ChatWidget.mount("#chat-root");
-    });
+
+        showStatus("Loading chat-widget.js ...");
+
+        const src = "{{ '/assets/chat-widget/chat-widget.js' | relative_url }}";
+        const s = document.createElement("script");
+        s.src = src;
+
+        s.onload = function () {
+            // Script loaded, now check global
+            if (!window.ChatWidget || typeof window.ChatWidget.mount !== "function") {
+                showStatus(
+                    "✅ chat-widget.js loaded.\n" +
+                    "❌ But window.ChatWidget.mount is NOT found.\n\n" +
+                    "This usually means the build output is not exposing window.ChatWidget.\n" +
+                    "Check chat-widget/src/widget.tsx has: window.ChatWidget = { mount, unmount };\n" +
+                    "and vite.config.js build.lib.formats includes 'iife'."
+                );
+                console.error("ChatWidget not found on window after load.");
+                return;
+            }
+
+            try {
+                showStatus("✅ chat-widget.js loaded.\n✅ window.ChatWidget.mount found.\nMounting now...");
+                window.ChatWidget.mount("#chat-root");
+            } catch (e) {
+                showStatus(
+                    "✅ chat-widget.js loaded.\n✅ window.ChatWidget.mount found.\n" +
+                    "❌ Mount failed:\n" + (e && e.stack ? e.stack : String(e))
+                );
+                console.error(e);
+            }
+        };
+
+        s.onerror = function () {
+            showStatus(
+                "❌ Failed to load chat-widget.js\n" +
+                "Path tried:\n" + src + "\n\n" +
+                "Most likely 404 (file not in /assets/chat-widget/ on the built site)."
+            );
+        };
+
+        document.body.appendChild(s);
+    })();
 </script>
