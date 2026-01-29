@@ -7,3 +7,10 @@
 </script>
 
 <link rel="stylesheet" href="/assets/chat-widget/chat-widget.css">
+<script src="{{ site.baseurl }}/assets/chat-widget/chat-widget.js"></script>
+<script>
+    window.addEventListener("load", () => {
+        window.ChatWidget?.mount?.("#chat-root");
+    });
+</script>
+<link rel="stylesheet" href="{{ site.baseurl }}/assets/chat-widget/chat-widget.css">
