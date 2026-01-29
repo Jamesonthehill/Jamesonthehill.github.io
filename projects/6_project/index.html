@@ -64,3 +64,9 @@
         document.body.appendChild(s);
     })();
 </script>
+<script src="{{ '/assets/chat-widget/chat-widget.js' | relative_url }}"></script>
+<script>
+    window.addEventListener("load", () => {
+        window.ChatWidget?.mount?.("#chat-root");
+    });
+</script>
