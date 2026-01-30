@@ -165,3 +165,76 @@ Check the render method of %s.`,Qe(ir)||"Unknown"));var v=Vu(s,f);v.payload={ele
 You might need to use a local HTTP server (instead of file://): https://reactjs.org/link/react-devtools-faq`:""),"font-weight:bold")}wa.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED=yE,wa.createPortal=sD,wa.createRoot=fD,wa.findDOMNode=aD,wa.flushSync=pD,wa.hydrate=iD,wa.hydrateRoot=dD,wa.render=lD,wa.unmountComponentAtNode=oD,wa.unstable_batchedUpdates=WS,wa.unstable_renderSubtreeIntoContainer=cD,wa.version=cE,typeof __REACT_DEVTOOLS_GLOBAL_HOOK__<"u"&&typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop=="function"&&__REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(new Error)})()),wa}var OE;function TT(){if(OE)return uv.exports;OE=1;function G(){if(!(typeof __REACT_DEVTOOLS_GLOBAL_HOOK__>"u"||typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE!="function")){if(process.env.NODE_ENV!=="production")throw new Error("^_^");try{__REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE(G)}catch(W){console.error(W)}}}return process.env.NODE_ENV==="production"?(G(),uv.exports=CT()):uv.exports=RT(),uv.exports}var LE;function wT(){if(LE)return sc;LE=1;var G=TT();if(process.env.NODE_ENV==="production")sc.createRoot=G.createRoot,sc.hydrateRoot=G.hydrateRoot;else{var W=G.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;sc.createRoot=function(A,ht){W.usingClientEntryPoint=!0;try{return G.createRoot(A,ht)}finally{W.usingClientEntryPoint=!1}},sc.hydrateRoot=function(A,ht,pt){W.usingClientEntryPoint=!0;try{return G.hydrateRoot(A,ht,pt)}finally{W.usingClientEntryPoint=!1}}}return sc}var xT=wT(),Zl=Jf();const ME="cgpt_widget_threads_v1";function Qo(){return Math.random().toString(16).slice(2)+Date.now().toString(16)}function Fi(){return Date.now()}function NE(){try{const G=localStorage.getItem(ME);if(!G)return[];const W=JSON.parse(G);return Array.isArray(W)?W:[]}catch{return[]}}function bT(G){try{localStorage.setItem(ME,JSON.stringify(G))}catch{}}function _T(G){return new Date(G).toLocaleDateString(void 0,{month:"short",day:"numeric"})}function DT(){const[G,W]=Zl.useState(()=>{const J=NE();return J.length?J:[{id:Qo(),title:"New chat",createdAt:Fi(),updatedAt:Fi(),messages:[{id:Qo(),role:"assistant",content:"Hi! Start a new chat on the left.",createdAt:Fi()}]}]}),[A,ht]=Zl.useState(()=>NE()[0]?.id??""),[pt,gt]=Zl.useState(""),[S,At]=Zl.useState(!1),ce=Zl.useRef(null),fe=Zl.useRef(null),Ie=Zl.useMemo(()=>G.find(J=>J.id===A)??G[0],[G,A]);Zl.useEffect(()=>{bT(G),G.length&&!A&&ht(G[0].id)},[G]),Zl.useEffect(()=>{ce.current?.scrollIntoView({behavior:"smooth",block:"end"})},[Ie?.messages.length,S]);function ee(J){ht(J),setTimeout(()=>fe.current?.focus(),0)}function Ce(){const J={id:Qo(),title:"New chat",createdAt:Fi(),updatedAt:Fi(),messages:[{id:Qo(),role:"assistant",content:"What’s on your mind?",createdAt:Fi()}]};W(Fe=>[J,...Fe]),ht(J.id)}function le(J){W(Fe=>{const he=Fe.filter(Ue=>Ue.id!==J);if(he.length===0){const Ue={id:Qo(),title:"New chat",createdAt:Fi(),updatedAt:Fi(),messages:[{id:Qo(),role:"assistant",content:"New chat started.",createdAt:Fi()}]};return ht(Ue.id),[Ue]}return A===J&&ht(he[0].id),he})}function $e(J,Fe){W(he=>he.map(Ue=>Ue.id===J?Fe(Ue):Ue).sort((Ue,De)=>De.updatedAt-Ue.updatedAt))}function vt(J,Fe){if(!Ie)return;const he={id:Qo(),role:J,content:Fe,createdAt:Fi()},Ue=Ie.id;$e(Ue,De=>{const Jt=[...De.messages,he],Dt=De.title==="New chat"&&J==="user"?Fe.trim().slice(0,32)||"New chat":De.title;return{...De,title:Dt,messages:Jt,updatedAt:Fi()}})}async function ct(J){At(!0),await new Promise(he=>setTimeout(he,500));const Fe=`You said: "${J}"
 
 Replace this with your backend / OpenAI API response.`;vt("assistant",Fe),At(!1)}async function Xt(){const J=pt.trim();!J||S||!Ie||(gt(""),vt("user",J),await ct(J),fe.current?.focus())}function it(J){J.key==="Enter"&&!J.shiftKey&&(J.preventDefault(),Xt())}return Bt.jsx("div",{className:"cgpt-widget",children:Bt.jsxs("div",{className:"cgpt-shell",children:[Bt.jsxs("aside",{className:"cgpt-sidebar",children:[Bt.jsxs("div",{className:"cgpt-side-top",children:[Bt.jsx("div",{className:"cgpt-brand",children:"Chat"}),Bt.jsx("button",{className:"cgpt-btn",onClick:Ce,children:"+ New"})]}),Bt.jsx("div",{className:"cgpt-thread-list",children:G.map(J=>{const Fe=J.id===Ie?.id;return Bt.jsxs("div",{className:`cgpt-thread ${Fe?"is-active":""}`,onClick:()=>ee(J.id),role:"button",tabIndex:0,children:[Bt.jsx("div",{className:"cgpt-thread-title",children:J.title}),Bt.jsxs("div",{className:"cgpt-thread-meta",children:[Bt.jsx("span",{children:_T(J.updatedAt)}),Bt.jsx("button",{className:"cgpt-link",onClick:he=>{he.stopPropagation(),le(J.id)},title:"Delete",children:"Delete"})]})]},J.id)})})]}),Bt.jsxs("section",{className:"cgpt-main",children:[Bt.jsx("header",{className:"cgpt-main-top",children:Bt.jsx("div",{className:"cgpt-main-title",children:Ie?.title??"Chat"})}),Bt.jsxs("div",{className:"cgpt-messages",children:[Ie?.messages.map(J=>Bt.jsx("div",{className:`cgpt-row ${J.role==="user"?"from-user":"from-assistant"}`,children:Bt.jsx("div",{className:"cgpt-bubble",children:Bt.jsx("pre",{children:J.content})})},J.id)),S&&Bt.jsx("div",{className:"cgpt-row from-assistant",children:Bt.jsx("div",{className:"cgpt-bubble",children:Bt.jsxs("span",{className:"cgpt-dots",children:[Bt.jsx("i",{}),Bt.jsx("i",{}),Bt.jsx("i",{})]})})}),Bt.jsx("div",{ref:ce})]}),Bt.jsxs("footer",{className:"cgpt-inputbar",children:[Bt.jsx("textarea",{ref:fe,value:pt,onChange:J=>gt(J.target.value),onKeyDown:it,placeholder:"Message… (Enter to send, Shift+Enter for newline)",rows:1}),Bt.jsx("button",{className:"cgpt-send",onClick:()=>{Xt()},disabled:!pt.trim()||S,children:"Send"})]})]})]})})}let Wo=null;function kT(G="#chat-root"){const W=document.querySelector(G);if(!W)throw new Error(`Mount element not found: ${G}`);Wo&&Wo.unmount(),Wo=xT.createRoot(W),Wo.render(Bt.jsx(DT,{}))}function OT(){Wo&&Wo.unmount(),Wo=null}window.ChatWidget={mount:kT,unmount:OT}})();
+
+// /assets/chat-widget/chat-widget.js
+(function () {
+  function createChatUI(root, backendUrl) {
+    root.innerHTML = `
+      <div class="gw-chat">
+        <div class="gw-chat-messages" id="gw-messages"></div>
+        <form id="gw-form" class="gw-chat-form">
+          <input id="gw-input" type="text" placeholder="Ask me anything..."
+                 autocomplete="off" />
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    `;
+
+    const messagesEl = root.querySelector("#gw-messages");
+    const form = root.querySelector("#gw-form");
+    const input = root.querySelector("#gw-input");
+
+    function addMessage(role, text) {
+      const div = document.createElement("div");
+      div.className = "gw-msg gw-" + role;
+      div.textContent = text;
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+
+      addMessage("user", text);
+      input.value = "";
+      addMessage("assistant", "Thinking...");
+
+      try {
+        const res = await fetch(backendUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text }),
+        });
+
+        const data = await res.json();
+        // 마지막 "Thinking..." 메시지 삭제하고 실제 답변 붙이기
+        messagesEl.lastChild.remove();
+        addMessage("assistant", data.reply || "(no reply)");
+      } catch (err) {
+        console.error(err);
+        messagesEl.lastChild.remove();
+        addMessage("assistant", "Error talking to the server.");
+      }
+    });
+  }
+
+  window.ChatWidget = {
+    mount(selector, options = {}) {
+      const root = document.querySelector(selector);
+      if (!root) return;
+
+      const backendUrl = options.backendUrl;
+      if (!backendUrl) {
+        root.innerHTML =
+            "<div style='padding:12px;font-family:system-ui;color:#b00020'>" +
+            "❌ backendUrl is missing in ChatWidget.mount(...)." +
+            "</div>";
+        return;
+      }
+
+      createChatUI(root, backendUrl);
+    },
+  };
+})();
