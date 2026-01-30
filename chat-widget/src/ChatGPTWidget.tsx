@@ -43,7 +43,7 @@ function formatDate(ts: number) {
     return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-export default function ChatGPTWidget() {
+export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
     const [threads, setThreads] = useState<Thread[]>(() => {
         const saved = safeLoad();
         if (saved.length) return saved;
@@ -152,34 +152,58 @@ export default function ChatGPTWidget() {
         });
     }
 
-    async function mockAssistantReply(userText: string) {
-        setIsTyping(true);
-        await new Promise((r) => setTimeout(r, 500));
+    async function callBackend(nextMessages: { role: string; content: string }[]) {
+        if (!backendUrl) {
+            throw new Error("backendUrl is empty. Pass it from mount().");
+        }
 
-        // TODO: replace with real API call
-        const reply =
-            `You said: "${userText}"\n\n` +
-            `Replace this with your backend / OpenAI API response.`;
+        const res = await fetch(backendUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            // send full conversation (recommended)
+            body: JSON.stringify({ messages: nextMessages }),
+        });
 
-        addMessage("assistant", reply);
-        setIsTyping(false);
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(`Backend error ${res.status}: ${text}`);
+        }
+
+        const data = await res.json();
+
+        // Expect your backend to return { text: "..." }
+        // If your backend returns { reply: "..." } you can adjust here.
+        return data.text ?? data.reply ?? "";
     }
+
 
     async function onSend() {
         const text = input.trim();
         if (!text || isTyping || !activeThread) return;
-        setInput("");
-        addMessage("user", text);
-        await mockAssistantReply(text);
-        inputRef.current?.focus();
-    }
 
-    function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            void onSend();
+        setInput("");
+        setIsTyping(true);
+
+        // Build the message list to send BEFORE state updates
+        const outgoing = [
+            ...(activeThread.messages ?? []).map((m) => ({ role: m.role, content: m.content })),
+            { role: "user", content: text },
+        ];
+
+        // Optimistically add user message to UI
+        addMessage("user", text);
+
+        try {
+            const answer = await callBackend(outgoing);
+            addMessage("assistant", answer || "(empty response)");
+        } catch (e: any) {
+            addMessage("assistant", "⚠️ " + (e?.message ?? String(e)));
+        } finally {
+            setIsTyping(false);
+            inputRef.current?.focus();
         }
     }
+
 
     return (
         <div className="cgpt-widget">
@@ -250,11 +274,16 @@ export default function ChatGPTWidget() {
     <footer className="cgpt-inputbar">
     <textarea
         ref={inputRef}
-    value={input}
-    onChange={(e) => setInput(e.target.value)}
-    onKeyDown={onKeyDown}
-    placeholder="Message… (Enter to send, Shift+Enter for newline)"
-    rows={1}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void onSend();
+            }
+        }}
+        placeholder="Message… (Enter to send, Shift+Enter for newline)"
+        rows={1}
     />
     <button className="cgpt-send" onClick={() => void onSend()} disabled={!input.trim() || isTyping}>
     Send

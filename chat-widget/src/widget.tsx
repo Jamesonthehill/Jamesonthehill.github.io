@@ -4,13 +4,13 @@ import ChatGPTWidget from "./ChatGPTWidget";
 
 let root: ReturnType<typeof createRoot> | null = null;
 
-function mount(selector = "#chat-root") {
+function mount(selector = "#chat-root", opts?: { backendUrl?: string }) {
     const el = document.querySelector(selector);
     if (!el) throw new Error(`Mount element not found: ${selector}`);
 
     if (root) root.unmount();
     root = createRoot(el);
-    root.render(<ChatGPTWidget />);
+    root.render(<ChatGPTWidget backendUrl={opts?.backendUrl || ""} />);
 }
 
 function unmount() {
@@ -18,5 +18,4 @@ function unmount() {
     root = null;
 }
 
-// ✅ THIS is what makes window.ChatWidget exist
 (window as any).ChatWidget = { mount, unmount };
