@@ -1,0 +1,71 @@
+/* ===============================
+   VISIBILITY FIX (DARK THEME)
+   Paste at the VERY BOTTOM
+   =============================== */
+
+/* 전체 기본 텍스트 색 보정 */
+.cgpt-widget,
+.cgpt-shell,
+.cgpt-main,
+.cgpt-sidebar{
+    color: rgba(255,255,255,.92) !important;
+}
+
+/* 사이드바 텍스트 */
+.cgpt-thread-title,
+.cgpt-brand,
+.cgpt-main-title{
+    color: rgba(255,255,255,.92) !important;
+}
+
+/* 날짜/메타 텍스트 */
+.cgpt-thread-meta{
+    color: rgba(255,255,255,.65) !important;
+}
+
+/* Delete 링크/버튼 글자 안 보이는 문제 */
+.cgpt-link{
+    color: rgba(255,255,255,.78) !important;
+}
+.cgpt-link:hover{
+    color: rgba(255,255,255,.95) !important;
+}
+
+/* 버튼 글자 */
+.cgpt-btn{
+    color: rgba(255,255,255,.92) !important;
+}
+
+/* 말풍선 텍스트 색 고정 */
+.cgpt-bubble{
+    color: rgba(255,255,255,.92) !important;
+}
+.cgpt-bubble pre{
+    color: rgba(255,255,255,.92) !important;
+}
+
+/* 유저 말풍선(파란 배경) 위 글자가 안 보이는 경우 */
+.cgpt-row.from-user .cgpt-bubble,
+.cgpt-row.from-user .cgpt-bubble pre{
+    color: rgba(255,255,255,.95) !important;
+}
+
+/* 입력창 텍스트/placeholder */
+.cgpt-inputbar textarea{
+    color: rgba(255,255,255,.92) !important;
+    caret-color: rgba(255,255,255,.92) !important;
+}
+.cgpt-inputbar textarea::placeholder{
+    color: rgba(255,255,255,.55) !important;
+}
+
+/* Send 버튼 글자 */
+.cgpt-send{
+    color: rgba(255,255,255,.95) !important;
+}
+
+/* 혹시 bootstrap/mdb 때문에 link 색이 파랗게 강제되는 경우 대비 */
+.cgpt-widget a,
+.cgpt-widget button{
+    color: inherit;
+}
