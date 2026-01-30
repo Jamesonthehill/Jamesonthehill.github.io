@@ -167,5 +167,24 @@
         }
     });
 </script>
+<script src="/assets/chat-widget/chat-widget.js"></script>
+
+<script>
+    window.addEventListener("load", function () {
+        const root = document.getElementById("chat-root");
+
+        if (window.ChatWidget && typeof window.ChatWidget.mount === "function") {
+            window.ChatWidget.mount("#chat-root", {
+                backendUrl: "https://YOUR-APP.onrender.com/api/chat"
+            });
+        } else {
+            root.innerHTML =
+                "<div style='padding:12px;font-family:system-ui;color:#b00020'>" +
+                "❌ Chat widget script loaded, but window.ChatWidget.mount is not available." +
+                "</div>";
+        }
+    });
+</script>
+
 </body>
 </html>
