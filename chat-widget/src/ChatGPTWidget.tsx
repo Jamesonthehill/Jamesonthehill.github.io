@@ -177,6 +177,7 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
     }
 
 
+
     async function onSend() {
         const text = input.trim();
         if (!text || isTyping || !activeThread) return;

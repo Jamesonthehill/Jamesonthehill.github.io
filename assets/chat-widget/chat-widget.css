@@ -292,3 +292,51 @@
     .cgpt-shell{ border-radius: 14px; }
     .cgpt-sidebar{ display:none; }
 }
+
+/* nav-bar between chat-bot */
+/* ====== Page layout fix (fill screen + avoid header overlap) ====== */
+:root{
+    /* 네 사이트 상단 navbar 높이에 맞춰 조절 */
+    --site-header-h: 72px;
+    --chat-gap-top: 16px;
+    --chat-gap-bottom: 16px;
+}
+
+/* chat-root 자체가 화면을 최대한 먹도록 */
+#chat-root.chat-root{
+    /* 화면 전체 - 헤더 - 위/아래 여백 */
+    height: calc(100vh - var(--site-header-h) - var(--chat-gap-top) - var(--chat-gap-bottom));
+    margin-top: var(--chat-gap-top);
+    margin-bottom: var(--chat-gap-bottom);
+
+    /* 옵션: 꽉찬 느낌 + 부드러운 박스 */
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 18px;
+    overflow: hidden;
+    background: rgba(10,12,16,0.35);
+    backdrop-filter: blur(10px);
+}
+
+/* 위젯이 부모 높이를 그대로 따라가게 */
+.cgpt-widget,
+.cgpt-shell{
+    height: 100%;
+}
+
+/* 메시지 영역이 남은 공간을 다 먹게 */
+.cgpt-main{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.cgpt-messages{
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+/* 헤더(채팅 상단바)가 너무 붙어있으면 살짝 여백 */
+.cgpt-main-top{
+    padding-top: 10px;
+}
