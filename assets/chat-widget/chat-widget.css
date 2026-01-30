@@ -340,3 +340,32 @@
 .cgpt-main-top{
     padding-top: 10px;
 }
+
+
+/* ===== Bootstrap/MDB 전역 스타일 덮어쓰기 (강제) ===== */
+#chat-root.chat-root,
+#chat-root.chat-root *{
+    color: rgba(255,255,255,.92) !important;
+}
+
+/* 링크/버튼이 파랗게 되는 거 방지 */
+#chat-root.chat-root a,
+#chat-root.chat-root button{
+    color: rgba(255,255,255,.92) !important;
+}
+
+/* pre 코드블록이 검정/파랑으로 바뀌는 거 방지 */
+#chat-root.chat-root pre{
+    color: rgba(255,255,255,.92) !important;
+}
+
+/* 입력창 글자/커서 색 강제 */
+#chat-root.chat-root textarea,
+#chat-root.chat-root input{
+    color: rgba(255,255,255,.92) !important;
+    caret-color: rgba(255,255,255,.92) !important;
+}
+#chat-root.chat-root textarea::placeholder,
+#chat-root.chat-root input::placeholder{
+    color: rgba(255,255,255,.55) !important;
+}

@@ -31,3 +31,4 @@
 .cgpt-dots i:nth-child(2){animation-delay:.15s}
 .cgpt-dots i:nth-child(3){animation-delay:.3s}
 @keyframes cgptb{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+
