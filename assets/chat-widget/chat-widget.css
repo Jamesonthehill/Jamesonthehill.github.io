@@ -1,146 +1,342 @@
-/* ===========================
-   LIGHT THEME OVERRIDE (PASTE ALL)
-   Paste this at the VERY BOTTOM of chat-widget.css
-   =========================== */
+/* assets/chat-widget/chat-widget.css */
 
-/* Theme tokens (LIGHT) */
+/* ---------- Theme tokens ---------- */
 :root{
-    --bg: #f6f7fb;
-    --panel: rgba(255,255,255,.75);
-    --panel2: rgba(255,255,255,.92);
-    --border: rgba(15,23,42,.10);
-    --border2: rgba(15,23,42,.14);
+    --bg: #0b0b0d;
+    --panel: rgba(255,255,255,.06);
+    --panel2: rgba(255,255,255,.08);
+    --border: rgba(255,255,255,.10);
+    --border2: rgba(255,255,255,.14);
 
-    --text: rgba(15,23,42,.92);
-    --muted: rgba(15,23,42,.60);
+    --text: rgba(255,255,255,.92);
+    --muted: rgba(255,255,255,.60);
 
-    --user: rgba(0,120,255,.12);
-    --userBorder: rgba(0,120,255,.22);
+    --user: rgba(0,160,255,.16);
+    --userBorder: rgba(0,160,255,.28);
 
-    --shadow: 0 18px 50px rgba(15,23,42,.12);
-    --shadow2: 0 10px 24px rgba(15,23,42,.10);
+    --shadow: 0 20px 60px rgba(0,0,0,.45);
+    --shadow2: 0 10px 30px rgba(0,0,0,.35);
 
-    /* keep your layout vars */
+    --r-lg: 18px;
+    --r-md: 14px;
+    --r-sm: 12px;
+}
+
+/* ---------- Root wrapper ---------- */
+.cgpt-widget{
+    height: 100%;
+    color: var(--text);
+    background: radial-gradient(1200px 800px at 20% 0%, rgba(0,160,255,.10), transparent 55%),
+    radial-gradient(900px 700px at 80% 20%, rgba(120,90,255,.10), transparent 60%),
+    var(--bg);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---------- Shell ---------- */
+.cgpt-shell{
+    height: 100%;
+    display: flex;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: rgba(15,15,18,.65);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(18px);
+}
+
+/* ---------- Sidebar ---------- */
+.cgpt-sidebar{
+    width: 285px;
+    flex: 0 0 285px;
+    background: rgba(10,10,12,.65);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    min-width: 240px;
+}
+
+.cgpt-side-top{
+    padding: 14px 14px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.cgpt-brand{
+    font-weight: 800;
+    letter-spacing: .2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cgpt-brand::before{
+    content:"";
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(0,160,255,.95), rgba(120,90,255,.95));
+    box-shadow: 0 0 0 4px rgba(255,255,255,.06);
+}
+
+.cgpt-btn{
+    border: 1px solid var(--border2);
+    background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+    color: var(--text);
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .08s ease, filter .15s ease, border-color .15s ease;
+}
+
+.cgpt-btn:hover{ filter: brightness(1.08); border-color: rgba(255,255,255,.20); }
+.cgpt-btn:active{ transform: scale(.98); }
+
+.cgpt-thread-list{
+    padding: 10px;
+    overflow: auto;
+}
+
+.cgpt-thread{
+    padding: 10px 10px;
+    border-radius: var(--r-md);
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease, transform .08s ease;
+    border: 1px solid transparent;
+}
+
+.cgpt-thread:hover{
+    background: rgba(255,255,255,.06);
+    border-color: rgba(255,255,255,.08);
+}
+
+.cgpt-thread.is-active{
+    background: rgba(255,255,255,.10);
+    border-color: rgba(255,255,255,.14);
+    box-shadow: var(--shadow2);
+}
+
+.cgpt-thread-title{
+    font-size: 13px;
+    font-weight: 750;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cgpt-thread-meta{
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.cgpt-link{
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,.72);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 10px;
+    transition: background .15s ease, color .15s ease;
+}
+.cgpt-link:hover{
+    background: rgba(255,255,255,.10);
+    color: rgba(255,255,255,.92);
+}
+
+/* ---------- Main ---------- */
+.cgpt-main{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.cgpt-main-top{
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,.03);
+}
+
+.cgpt-main-title{
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cgpt-messages{
+    flex: 1;
+    overflow: auto;
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ---------- Bubbles ---------- */
+.cgpt-row{ display:flex; }
+.cgpt-row.from-user{ justify-content:flex-end; }
+.cgpt-row.from-assistant{ justify-content:flex-start; }
+
+.cgpt-bubble{
+    max-width: min(760px, 92%);
+    padding: 11px 13px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,.06);
+    box-shadow: 0 8px 22px rgba(0,0,0,.25);
+}
+
+.cgpt-row.from-user .cgpt-bubble{
+    background: linear-gradient(180deg, rgba(0,160,255,.18), rgba(0,160,255,.10));
+    border-color: var(--userBorder);
+}
+
+.cgpt-bubble pre{
+    margin:0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: inherit;
+    line-height: 1.45;
+}
+
+/* ---------- Typing dots ---------- */
+.cgpt-dots i{
+    display:inline-block;
+    width:6px; height:6px;
+    border-radius:999px;
+    background: rgba(255,255,255,.80);
+    margin-right: 4px;
+    opacity: .70;
+    animation: cgptb 1s infinite;
+}
+.cgpt-dots i:nth-child(2){ animation-delay:.15s; }
+.cgpt-dots i:nth-child(3){ animation-delay:.30s; }
+@keyframes cgptb{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+
+/* ---------- Input bar ---------- */
+.cgpt-inputbar{
+    padding: 12px 12px 14px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    background: rgba(255,255,255,.03);
+}
+
+.cgpt-inputbar textarea{
+    flex: 1;
+    resize: none;
+    background: rgba(0,0,0,.35);
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px;
+    padding: 12px 12px;
+    outline: none;
+    min-height: 46px;
+    line-height: 1.35;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.cgpt-inputbar textarea:focus{
+    border-color: rgba(0,160,255,.35);
+    box-shadow: 0 0 0 4px rgba(0,160,255,.12);
+}
+
+.cgpt-send{
+    border-radius: 14px;
+    padding: 12px 14px;
+    border: 1px solid rgba(255,255,255,.14);
+    color: var(--text);
+    background: linear-gradient(135deg, rgba(0,160,255,.40), rgba(120,90,255,.35));
+    cursor: pointer;
+    font-weight: 800;
+    transition: transform .08s ease, filter .15s ease;
+}
+
+.cgpt-send:hover{ filter: brightness(1.06); }
+.cgpt-send:active{ transform: scale(.98); }
+.cgpt-send:disabled{
+    opacity: .45;
+    cursor: not-allowed;
+    filter: none;
+}
+
+/* ---------- Scrollbar (WebKit) ---------- */
+.cgpt-thread-list::-webkit-scrollbar,
+.cgpt-messages::-webkit-scrollbar{ width: 10px; }
+.cgpt-thread-list::-webkit-scrollbar-thumb,
+.cgpt-messages::-webkit-scrollbar-thumb{
+    background: rgba(255,255,255,.10);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+.cgpt-thread-list::-webkit-scrollbar-thumb:hover,
+.cgpt-messages::-webkit-scrollbar-thumb:hover{ background: rgba(255,255,255,.16); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 820px){
+    .cgpt-sidebar{ width: 220px; flex-basis: 220px; }
+}
+@media (max-width: 640px){
+    .cgpt-shell{ border-radius: 14px; }
+    .cgpt-sidebar{ display:none; }
+}
+
+/* nav-bar between chat-bot */
+/* ====== Page layout fix (fill screen + avoid header overlap) ====== */
+:root{
+    /* 네 사이트 상단 navbar 높이에 맞춰 조절 */
     --site-header-h: 72px;
     --chat-gap-top: 16px;
     --chat-gap-bottom: 16px;
 }
 
-/* Page layout: fill screen + avoid header overlap */
+/* chat-root 자체가 화면을 최대한 먹도록 */
 #chat-root.chat-root{
+    /* 화면 전체 - 헤더 - 위/아래 여백 */
     height: calc(100vh - var(--site-header-h) - var(--chat-gap-top) - var(--chat-gap-bottom));
     margin-top: var(--chat-gap-top);
     margin-bottom: var(--chat-gap-bottom);
 
-    border: 1px solid rgba(15,23,42,.12);
+    /* 옵션: 꽉찬 느낌 + 부드러운 박스 */
+    border: 1px solid rgba(255,255,255,0.10);
     border-radius: 18px;
     overflow: hidden;
-    background: rgba(255,255,255,.70);
+    background: rgba(10,12,16,0.35);
     backdrop-filter: blur(10px);
 }
 
-/* Widget background */
-.cgpt-widget{
-    height: 100%;
-    color: var(--text);
-    background:
-            radial-gradient(900px 700px at 20% 0%, rgba(0,120,255,.10), transparent 60%),
-            radial-gradient(800px 600px at 80% 20%, rgba(120,90,255,.10), transparent 60%),
-            var(--bg);
-}
-
-/* Shell */
+/* 위젯이 부모 높이를 그대로 따라가게 */
+.cgpt-widget,
 .cgpt-shell{
     height: 100%;
-    display: flex;
-    border-radius: 18px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,.70);
-    box-shadow: var(--shadow);
-    backdrop-filter: blur(14px);
 }
 
-/* Sidebar */
-.cgpt-sidebar{
-    background: rgba(255,255,255,.62);
-    border-right: 1px solid var(--border);
-}
-
-/* Main header */
-.cgpt-main-top{
-    background: rgba(255,255,255,.55);
-    border-bottom: 1px solid var(--border);
-}
-
-/* Threads */
-.cgpt-thread:hover{
-    background: rgba(15,23,42,.04);
-    border-color: rgba(15,23,42,.06);
-}
-.cgpt-thread.is-active{
-    background: rgba(15,23,42,.06);
-    border-color: rgba(15,23,42,.10);
-    box-shadow: var(--shadow2);
-}
-
-/* Bubbles */
-.cgpt-bubble{
-    background: rgba(255,255,255,.78);
-    border-color: rgba(15,23,42,.10);
-    box-shadow: 0 8px 18px rgba(15,23,42,.10);
-}
-.cgpt-row.from-user .cgpt-bubble{
-    background: linear-gradient(180deg, rgba(0,120,255,.16), rgba(0,120,255,.08));
-    border-color: var(--userBorder);
-}
-
-/* Make messages area flex correctly */
+/* 메시지 영역이 남은 공간을 다 먹게 */
 .cgpt-main{
     height: 100%;
     display: flex;
     flex-direction: column;
 }
+
 .cgpt-messages{
     flex: 1;
     min-height: 0;
     overflow: auto;
 }
 
-/* Input bar */
-.cgpt-inputbar{
-    background: rgba(255,255,255,.55);
-    border-top: 1px solid var(--border);
-}
-.cgpt-inputbar textarea{
-    background: rgba(255,255,255,.92);
-    border: 1px solid rgba(15,23,42,.14);
-    color: var(--text);
-}
-.cgpt-inputbar textarea:focus{
-    border-color: rgba(0,120,255,.40);
-    box-shadow: 0 0 0 4px rgba(0,120,255,.14);
-}
-.cgpt-send{
-    border: 1px solid rgba(15,23,42,.12);
-    background: linear-gradient(135deg, rgba(0,120,255,.90), rgba(120,90,255,.80));
-    color: #fff;
-}
-
-/* Scrollbars */
-.cgpt-thread-list::-webkit-scrollbar,
-.cgpt-messages::-webkit-scrollbar{ width: 10px; }
-.cgpt-thread-list::-webkit-scrollbar-thumb,
-.cgpt-messages::-webkit-scrollbar-thumb{
-    background: rgba(15,23,42,.14);
-    border-radius: 999px;
-    border: 2px solid transparent;
-    background-clip: content-box;
-}
-.cgpt-thread-list::-webkit-scrollbar-thumb:hover,
-.cgpt-messages::-webkit-scrollbar-thumb:hover{ background: rgba(15,23,42,.20); }
-
-/* Typing dots a bit darker for light bg */
-.cgpt-dots i{
-    background: rgba(15,23,42,.65);
+/* 헤더(채팅 상단바)가 너무 붙어있으면 살짝 여백 */
+.cgpt-main-top{
+    padding-top: 10px;
 }
