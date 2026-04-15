@@ -152,16 +152,19 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
         });
     }
 
-    async function callBackend(nextMessages: { role: string; content: string }[]) {
-        if (!backendUrl) {
-            throw new Error("backendUrl is empty. Pass it from mount().");
-        }
+    async function callBackend(threadId: string, nextMessages: ({ role: "user" | "assistant"; content: string } | {
+        role: string;
+        content: string
+    })[]) {
+        if (!backendUrl) throw new Error("backendUrl is empty. Pass it from mount().");
 
         const res = await fetch(backendUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            // send full conversation (recommended)
-            body: JSON.stringify({ messages: nextMessages }),
+            body: JSON.stringify({
+                threadId,            // ✅ add this
+                messages: nextMessages,
+            }),
         });
 
         if (!res.ok) {
@@ -170,10 +173,7 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
         }
 
         const data = await res.json();
-
-        // Expect your backend to return { text: "..." }
-        // If your backend returns { reply: "..." } you can adjust here.
-        return data.text ?? data.reply ?? "";
+        return data.reply ?? data.text ?? "";
     }
 
 
@@ -195,7 +195,7 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
         addMessage("user", text);
 
         try {
-            const answer = await callBackend(outgoing);
+            const answer = await callBackend(activeThread.id, outgoing);
             addMessage("assistant", answer || "(empty response)");
         } catch (e: any) {
             addMessage("assistant", "⚠️ " + (e?.message ?? String(e)));
