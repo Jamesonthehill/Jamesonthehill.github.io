@@ -17,8 +17,8 @@ const WELCOME_MESSAGE =
 const NEW_THREAD_TITLE = "Resume question";
 const SUGGESTED_QUESTIONS = [
     "What projects has Geonwoo built?",
-    "What are Geonwoo's technical skills?",
-    "Does Geonwoo have backend experience?",
+    "What are Geonwoo's technical interests?",
+    "Does Geonwoo have research experience?",
     "Tell me about Geonwoo's education.",
     "How can I contact Geonwoo?",
 ];
