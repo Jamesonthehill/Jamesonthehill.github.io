@@ -24,7 +24,24 @@ const SUGGESTED_QUESTIONS = [
 ];
 
 function uid() {
-    return Math.random().toString(16).slice(2) + Date.now().toString(16);
+    if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+        return crypto.randomUUID();
+    }
+
+    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
+        (
+            Number(c) ^
+            (Math.random() * 16) >>
+                (Number(c) / 4)
+        ).toString(16)
+    );
+}
+
+function isUuid(value: unknown) {
+    return (
+        typeof value === "string" &&
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+    );
 }
 
 function now() {
@@ -40,6 +57,7 @@ function safeLoad(): Thread[] {
 
         return parsed.map((thread) => ({
             ...thread,
+            id: isUuid(thread.id) ? thread.id : uid(),
             title: thread.title === "New chat" ? NEW_THREAD_TITLE : thread.title,
             messages: Array.isArray(thread.messages)
                 ? thread.messages.map((message: Msg) => ({
@@ -88,10 +106,7 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
         return [t];
     });
 
-    const [activeId, setActiveId] = useState<string>(() => {
-        const saved = safeLoad();
-        return saved[0]?.id ?? "";
-    });
+    const [activeId, setActiveId] = useState("");
 
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
