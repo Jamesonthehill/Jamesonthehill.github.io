@@ -46,8 +46,23 @@
     <link rel="canonical" href="https://jamesonthehill.github.io/projects/">
 
     <!-- Theme init -->
-<!--    <script src="/assets/js/theme.js?9a0c749ec5240d9cda97bc72359a72c0"></script>-->
-<!--    <script>initTheme();</script>-->
+    <script src="/assets/js/theme.js?9a0c749ec5240d9cda97bc72359a72c0"></script>
+    <script>
+        const savedTheme = localStorage.getItem("theme");
+        setThemeSetting(savedTheme === "dark" ? "dark" : "light");
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const themeToggle = document.getElementById("light-toggle");
+            if (!themeToggle) return;
+
+            themeToggle.addEventListener("click", function (event) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                const currentTheme = determineComputedTheme();
+                setThemeSetting(currentTheme === "dark" ? "light" : "dark");
+            });
+        });
+    </script>
 
     <!-- Small inline styles -->
     <style>
@@ -117,8 +132,7 @@
                     </li>
 
                     <li class="toggle-container">
-                        <button id="light-toggle" title="Change theme">
-                            <i class="ti ti-sun-moon" id="light-toggle-system"></i>
+                        <button id="light-toggle" title="Switch dark/light theme" aria-label="Switch dark/light theme">
                             <i class="ti ti-moon-filled" id="light-toggle-dark"></i>
                             <i class="ti ti-sun-filled" id="light-toggle-light"></i>
                         </button>
@@ -179,5 +193,3 @@
 
 </body>
 </html>
-
-

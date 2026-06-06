@@ -1,7 +1,10 @@
 /* assets/chat-widget/chat-widget.css */
 .cgpt-widget{height:100%;background:#0f0f10;color:#e9e9ea;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+html[data-theme=light] .cgpt-widget{background:#f7f9fc;color:#172033}
 .cgpt-shell{height:100%;display:flex;border-radius:12px;overflow:hidden;background:#141416;border:1px solid rgba(255,255,255,.08)}
+html[data-theme=light] .cgpt-shell{background:rgba(255,255,255,.82);border-color:rgba(15,23,42,.12)}
 .cgpt-sidebar{width:260px;flex:0 0 260px;background:#101012;border-right:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column}
+html[data-theme=light] .cgpt-sidebar{background:#f8fafc;border-right-color:rgba(15,23,42,.12)}
 .cgpt-side-top{display:flex;align-items:center;justify-content:space-between;padding:12px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
 .cgpt-brand{font-weight:700;letter-spacing:.2px;line-height:1.25}
 .cgpt-btn{background:#1f1f22;border:1px solid rgba(255,255,255,.12);color:#e9e9ea;border-radius:10px;padding:6px 10px;cursor:pointer}
@@ -15,6 +18,7 @@
 .cgpt-link{background:transparent;border:none;color:#c9c9ca;cursor:pointer;text-decoration:underline;padding:0}
 .cgpt-main{flex:1;display:flex;flex-direction:column;min-width:0}
 .cgpt-main-top{padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
+html[data-theme=light] .cgpt-main-top{border-bottom-color:rgba(15,23,42,.12);background:rgba(255,255,255,.68)}
 .cgpt-main-title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cgpt-main-subtitle{margin:6px 0 12px;color:rgba(255,255,255,.66);font-size:13px;line-height:1.35}
 .cgpt-suggestions{display:flex;flex-wrap:wrap;gap:8px}
@@ -26,11 +30,15 @@
 .cgpt-row.from-user{justify-content:flex-end}
 .cgpt-row.from-assistant{justify-content:flex-start}
 .cgpt-bubble{max-width:min(720px,90%);padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.06)}
+html[data-theme=light] .cgpt-bubble{background:rgba(255,255,255,.86);border-color:rgba(15,23,42,.12)}
 .cgpt-row.from-user .cgpt-bubble{background:rgba(0,160,255,.15);border-color:rgba(0,160,255,.25)}
 .cgpt-bubble pre{margin:0;white-space:pre-wrap;word-break:break-word;font-family:inherit}
 .cgpt-inputbar{display:flex;gap:10px;padding:12px 12px;border-top:1px solid rgba(255,255,255,.08)}
+html[data-theme=light] .cgpt-inputbar{border-top-color:rgba(15,23,42,.12);background:rgba(255,255,255,.70)}
 .cgpt-inputbar textarea{flex:1;resize:none;background:#0f0f10;color:#e9e9ea;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 10px;outline:none;min-height:44px}
+html[data-theme=light] .cgpt-inputbar textarea{background:#fff;color:#172033;border-color:rgba(15,23,42,.14)}
 .cgpt-send{background:#1f1f22;border:1px solid rgba(255,255,255,.12);color:#e9e9ea;border-radius:12px;padding:10px 14px;cursor:pointer}
+html[data-theme=light] .cgpt-send{background:#1a73e8;color:#fff}
 .cgpt-send:disabled{opacity:.5;cursor:not-allowed}
 .cgpt-dots{display:inline-flex;align-items:center;gap:5px;filter:drop-shadow(0 0 10px rgba(0,160,255,.28))}
 .cgpt-dots i{display:inline-block;width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,#e9e9ea,#00a0ff);opacity:.78;animation:cgptb 1.15s infinite cubic-bezier(.4,0,.2,1);transform-origin:center}
