@@ -23,8 +23,7 @@ const SUGGESTED_QUESTIONS = [
     "How can I contact Geonwoo?",
 ];
 const CONTACT_QUESTION = "How can I contact Geonwoo?";
-const CONTACT_ANSWER =
-    "You can contact Geonwoo at dlrjsdn5333@gmail.com or 7042581759. These personal contact details can be used by employers.";
+const CONTACT_ANSWER = "You can contact Geonwoo at dlrjsdn5333@gmail.com or 7042581759.";
 
 function uid() {
     if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
