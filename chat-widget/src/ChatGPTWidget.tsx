@@ -13,7 +13,7 @@ type Thread = {
 
 const STORAGE_KEY = "cgpt_widget_threads_v1";
 const WELCOME_MESSAGE =
-    "Hi, I'm Geonwoo's resume assistant. Ask me about his projects, skills, experience, education, or contact information.";
+    "Hi, I'm Geonwoo's resume assistant. Ask me about his projects, interests, experience, education, or contact information. If this is your first question, please allow about 15 seconds for the server to wake up.";
 const NEW_THREAD_TITLE = "Resume question";
 const SUGGESTED_QUESTIONS = [
     "What projects has Geonwoo built?",
