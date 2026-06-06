@@ -55,7 +55,7 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
             createdAt: now(),
             updatedAt: now(),
             messages: [
-                { id: uid(), role: "assistant", content: "Hi! Start a new chat on the left.", createdAt: now() },
+                { id: uid(), role: "assistant", content: "Hi, I’m Geonwoo’s resume assistant. Ask me about his projects, skills, experience, education, or contact information.", createdAt: now() },
             ],
         };
         return [t];
