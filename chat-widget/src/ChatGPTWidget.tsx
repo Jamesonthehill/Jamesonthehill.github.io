@@ -22,6 +22,9 @@ const SUGGESTED_QUESTIONS = [
     "Tell me about Geonwoo's education.",
     "How can I contact Geonwoo?",
 ];
+const CONTACT_QUESTION = "How can I contact Geonwoo?";
+const CONTACT_ANSWER =
+    "You can contact Geonwoo at dlrjsdn5333@gmail.com or 7042581759. These personal contact details can be used by employers.";
 
 function uid() {
     if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -222,7 +225,6 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
         if (!text || isTyping || !activeThread) return;
 
         setInput("");
-        setIsTyping(true);
 
         // Build the message list to send BEFORE state updates
         const outgoing = [
@@ -232,6 +234,14 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
 
         // Optimistically add user message to UI
         addMessage("user", text);
+
+        if (text === CONTACT_QUESTION) {
+            addMessage("assistant", CONTACT_ANSWER);
+            inputRef.current?.focus();
+            return;
+        }
+
+        setIsTyping(true);
 
         try {
             const answer = await callBackend(activeThread.id, outgoing);
