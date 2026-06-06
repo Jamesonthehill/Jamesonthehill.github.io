@@ -12,6 +12,16 @@ type Thread = {
 };
 
 const STORAGE_KEY = "cgpt_widget_threads_v1";
+const WELCOME_MESSAGE =
+    "Hi, I'm Geonwoo's resume assistant. Ask me about his projects, skills, experience, education, or contact information.";
+const NEW_THREAD_TITLE = "Resume question";
+const SUGGESTED_QUESTIONS = [
+    "What projects has Geonwoo built?",
+    "What are Geonwoo's technical skills?",
+    "Does Geonwoo have backend experience?",
+    "Tell me about Geonwoo's education.",
+    "How can I contact Geonwoo?",
+];
 
 function uid() {
     return Math.random().toString(16).slice(2) + Date.now().toString(16);
@@ -26,7 +36,25 @@ function safeLoad(): Thread[] {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return [];
         const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
+        if (!Array.isArray(parsed)) return [];
+
+        return parsed.map((thread) => ({
+            ...thread,
+            title: thread.title === "New chat" ? NEW_THREAD_TITLE : thread.title,
+            messages: Array.isArray(thread.messages)
+                ? thread.messages.map((message: Msg) => ({
+                      ...message,
+                      content:
+                          message.role === "assistant" &&
+                          (message.content === "Hi! Start a new chat on the left." ||
+                              message.content === "What's on your mind?" ||
+                              message.content === "What’s on your mind?" ||
+                              message.content === "New chat started.")
+                              ? WELCOME_MESSAGE
+                              : message.content,
+                  }))
+                : [],
+        }));
     } catch {
         return [];
     }
@@ -48,14 +76,13 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
         const saved = safeLoad();
         if (saved.length) return saved;
 
-        // default thread
         const t: Thread = {
             id: uid(),
-            title: "New chat",
+            title: NEW_THREAD_TITLE,
             createdAt: now(),
             updatedAt: now(),
             messages: [
-                { id: uid(), role: "assistant", content: "Hi, I’m Geonwoo’s resume assistant. Ask me about his projects, skills, experience, education, or contact information.", createdAt: now() },
+                { id: uid(), role: "assistant", content: WELCOME_MESSAGE, createdAt: now() },
             ],
         };
         return [t];
@@ -95,10 +122,10 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
     function newChat() {
         const t: Thread = {
             id: uid(),
-            title: "New chat",
+            title: NEW_THREAD_TITLE,
             createdAt: now(),
             updatedAt: now(),
-            messages: [{ id: uid(), role: "assistant", content: "What’s on your mind?", createdAt: now() }],
+            messages: [{ id: uid(), role: "assistant", content: WELCOME_MESSAGE, createdAt: now() }],
         };
         setThreads((prev) => [t, ...prev]);
         setActiveId(t.id);
@@ -111,10 +138,10 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
             if (next.length === 0) {
                 const t: Thread = {
                     id: uid(),
-                    title: "New chat",
+                    title: NEW_THREAD_TITLE,
                     createdAt: now(),
                     updatedAt: now(),
-                    messages: [{ id: uid(), role: "assistant", content: "New chat started.", createdAt: now() }],
+                    messages: [{ id: uid(), role: "assistant", content: WELCOME_MESSAGE, createdAt: now() }],
                 };
                 setActiveId(t.id);
                 return [t];
@@ -139,8 +166,8 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
         updateThread(threadId, (t) => {
             const nextMessages = [...t.messages, msg];
             const nextTitle =
-                t.title === "New chat" && role === "user"
-                    ? content.trim().slice(0, 32) || "New chat"
+                t.title === NEW_THREAD_TITLE && role === "user"
+                    ? content.trim().slice(0, 32) || NEW_THREAD_TITLE
                     : t.title;
 
             return {
@@ -175,11 +202,8 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
         const data = await res.json();
         return data.reply ?? data.text ?? "";
     }
-
-
-
-    async function onSend() {
-        const text = input.trim();
+    async function onSend(prompt?: string) {
+        const text = (prompt ?? input).trim();
         if (!text || isTyping || !activeThread) return;
 
         setInput("");
@@ -212,8 +236,8 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
             {/* Sidebar */}
             <aside className="cgpt-sidebar">
     <div className="cgpt-side-top">
-    <div className="cgpt-brand">Chat</div>
-        <button className="cgpt-btn" onClick={newChat}>+ New</button>
+    <div className="cgpt-brand">Geonwoo Resume Assistant</div>
+        <button className="cgpt-btn" onClick={newChat}>New question</button>
         </div>
 
         <div className="cgpt-thread-list">
@@ -247,7 +271,23 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
     {/* Main */}
     <section className="cgpt-main">
     <header className="cgpt-main-top">
-    <div className="cgpt-main-title">{activeThread?.title ?? "Chat"}</div>
+    <div className="cgpt-main-title">{activeThread?.title ?? NEW_THREAD_TITLE}</div>
+    <p className="cgpt-main-subtitle">
+        Ask about Geonwoo's background, projects, skills, education, and experience.
+    </p>
+    <div className="cgpt-suggestions" aria-label="Suggested resume questions">
+        {SUGGESTED_QUESTIONS.map((question) => (
+            <button
+                key={question}
+                type="button"
+                className="cgpt-suggestion"
+                onClick={() => void onSend(question)}
+                disabled={isTyping}
+            >
+                {question}
+            </button>
+        ))}
+    </div>
     </header>
 
     <div className="cgpt-messages">
@@ -283,11 +323,11 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
                 void onSend();
             }
         }}
-        placeholder="Message… (Enter to send, Shift+Enter for newline)"
+        placeholder="Ask about Geonwoo's resume..."
         rows={1}
     />
     <button className="cgpt-send" onClick={() => void onSend()} disabled={!input.trim() || isTyping}>
-    Send
+    Ask
     </button>
     </footer>
     </section>

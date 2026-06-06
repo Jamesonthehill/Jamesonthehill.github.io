@@ -3,7 +3,7 @@
 .cgpt-shell{height:100%;display:flex;border-radius:12px;overflow:hidden;background:#141416;border:1px solid rgba(255,255,255,.08)}
 .cgpt-sidebar{width:260px;flex:0 0 260px;background:#101012;border-right:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column}
 .cgpt-side-top{display:flex;align-items:center;justify-content:space-between;padding:12px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
-.cgpt-brand{font-weight:700;letter-spacing:.2px}
+.cgpt-brand{font-weight:700;letter-spacing:.2px;line-height:1.25}
 .cgpt-btn{background:#1f1f22;border:1px solid rgba(255,255,255,.12);color:#e9e9ea;border-radius:10px;padding:6px 10px;cursor:pointer}
 .cgpt-btn:hover{filter:brightness(1.1)}
 .cgpt-thread-list{padding:8px;overflow:auto}
@@ -14,8 +14,13 @@
 .cgpt-thread-meta{margin-top:6px;display:flex;align-items:center;justify-content:space-between;font-size:12px;opacity:.8}
 .cgpt-link{background:transparent;border:none;color:#c9c9ca;cursor:pointer;text-decoration:underline;padding:0}
 .cgpt-main{flex:1;display:flex;flex-direction:column;min-width:0}
-.cgpt-main-top{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.cgpt-main-top{padding:14px 16px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
 .cgpt-main-title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cgpt-main-subtitle{margin:6px 0 12px;color:rgba(255,255,255,.66);font-size:13px;line-height:1.35}
+.cgpt-suggestions{display:flex;flex-wrap:wrap;gap:8px}
+.cgpt-suggestion{border:1px solid rgba(0,160,255,.28);background:rgba(0,160,255,.10);color:#e9e9ea;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:650;cursor:pointer}
+.cgpt-suggestion:hover{background:rgba(0,160,255,.16);border-color:rgba(0,160,255,.42)}
+.cgpt-suggestion:disabled{opacity:.45;cursor:not-allowed}
 .cgpt-messages{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
 .cgpt-row{display:flex}
 .cgpt-row.from-user{justify-content:flex-end}
@@ -32,3 +37,8 @@
 .cgpt-dots i:nth-child(3){animation-delay:.3s}
 @keyframes cgptb{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 
+@media (max-width:640px){
+  .cgpt-sidebar{display:none}
+  .cgpt-main-subtitle{font-size:12px}
+  .cgpt-suggestions{gap:6px}
+}

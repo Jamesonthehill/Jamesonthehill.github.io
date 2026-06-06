@@ -72,6 +72,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    line-height: 1.25;
 }
 
 .cgpt-brand::before{
@@ -172,6 +173,42 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.cgpt-main-subtitle{
+    margin: 6px 0 12px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.cgpt-suggestions{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.cgpt-suggestion{
+    border: 1px solid rgba(0,160,255,.28);
+    background: rgba(0,160,255,.10);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease, transform .08s ease;
+}
+
+.cgpt-suggestion:hover{
+    background: rgba(0,160,255,.16);
+    border-color: rgba(0,160,255,.42);
+}
+
+.cgpt-suggestion:active{ transform: scale(.98); }
+.cgpt-suggestion:disabled{
+    opacity: .45;
+    cursor: not-allowed;
 }
 
 .cgpt-messages{
@@ -291,6 +328,8 @@
 @media (max-width: 640px){
     .cgpt-shell{ border-radius: 14px; }
     .cgpt-sidebar{ display:none; }
+    .cgpt-main-subtitle{ font-size: 12px; }
+    .cgpt-suggestions{ gap: 6px; }
 }
 
 /* nav-bar between chat-bot */
