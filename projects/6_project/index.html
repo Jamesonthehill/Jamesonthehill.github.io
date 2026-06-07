@@ -47,22 +47,7 @@
 
     <!-- Theme init -->
     <script src="/assets/js/theme.js?9a0c749ec5240d9cda97bc72359a72c0"></script>
-    <script>
-        const savedTheme = localStorage.getItem("theme");
-        setThemeSetting(savedTheme === "dark" ? "dark" : "light");
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const themeToggle = document.getElementById("light-toggle");
-            if (!themeToggle) return;
-
-            themeToggle.addEventListener("click", function (event) {
-                event.preventDefault();
-                event.stopImmediatePropagation();
-                const currentTheme = determineComputedTheme();
-                setThemeSetting(currentTheme === "dark" ? "light" : "dark");
-            });
-        });
-    </script>
+    <script>initTheme();</script>
 
     <!-- Small inline styles -->
     <style>
