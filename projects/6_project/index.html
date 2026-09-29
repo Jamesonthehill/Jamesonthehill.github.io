@@ -7,10 +7,10 @@
           content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-    <title>projects | Geonwoo Lee</title>
+    <title>Geonwoo AI | Geonwoo Lee</title>
 
     <meta name="author" content="Geonwoo Lee">
-    <meta name="description" content="A Professional & Research Projects">
+    <meta name="description" content="Ask Geonwoo Lee's AI portfolio assistant about his research, projects, and experience.">
     <meta name="keywords"
           content="jekyll, jekyll-theme, academic-website, portfolio-website">
 
@@ -46,7 +46,7 @@
     <link rel="icon" href="/assets/img/favicon-32x32.png?v=2" type="image/png" sizes="32x32">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 
-    <link rel="canonical" href="https://jamesonthehill.github.io/projects/">
+    <link rel="canonical" href="https://jamesonthehill.com/projects/6_project/">
 
     <!-- Theme init -->
     <script src="/assets/js/theme.js?9a0c749ec5240d9cda97bc72359a72c0"></script>
@@ -61,7 +61,7 @@
     </style>
 </head>
 
-<body>
+<body class="chat-page">
 <header>
     <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation">
         <div class="container">
@@ -138,9 +138,13 @@
 </header>
 
 <!-- Main content -->
-<main class="container-fluid px-0" style="padding-top:50px;">
+<main class="container-fluid px-0" style="padding-top:64px;">
     <div id="chat-root" class="chat-root"></div>
 </main>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script src="/assets/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/js/common.js?v=20260929-portfolio2"></script>
 
 <!-- Make Node-like process.env available for the bundle -->
 <script>
@@ -148,36 +152,19 @@
 </script>
 
 <!-- Chat widget bundle -->
-<script src="/assets/chat-widget/chat-widget.js"></script>
-
-<!-- Mount the widget -->
+<script src="/assets/chat-widget/chat-widget.js?v=20260929-2"></script>
 <script>
     window.addEventListener("load", function () {
+        const root = document.getElementById("chat-root");
         if (window.ChatWidget && typeof window.ChatWidget.mount === "function") {
-            window.ChatWidget.mount("#chat-root");
+            window.ChatWidget.mount("#chat-root", {
+                backendUrl: "https://chatbot-backend-zto2.onrender.com/api/chat"
+            });
         } else {
-            const root = document.getElementById("chat-root");
-            root.innerHTML =
-                "<div style='padding:12px;font-family:system-ui;color:#b00020'>" +
-                "❌ Chat widget script loaded, but window.ChatWidget.mount is not available." +
-                "</div>";
+            root.textContent = "The assistant could not load. Please refresh the page.";
         }
     });
 </script>
-<script src="/assets/chat-widget/chat-widget.js"></script>
-<script>
-    window.addEventListener("load", function () {
-        window.ChatWidget.mount("#chat-root", {
-            backendUrl: "https://chatbot-backend-zto2.onrender.com/api/chat"
-        });
-    });
-</script>
-
-<footer class="fixed-bottom" role="contentinfo">
-    <div class="container mt-0" style="text-align: left;">
-        © Copyright 2025 Geonwoo Lee
-    </div>
-</footer>
 
 </body>
 </html>

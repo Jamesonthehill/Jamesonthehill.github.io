@@ -91,6 +91,10 @@ function formatDate(ts: number) {
     return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+function formatTime(ts: number) {
+    return new Date(ts).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+}
+
 export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
     const [threads, setThreads] = useState<Thread[]>(() => {
         const saved = safeLoad();
@@ -211,10 +215,7 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
             }),
         });
 
-        if (!res.ok) {
-            const text = await res.text();
-            throw new Error(`Backend error ${res.status}: ${text}`);
-        }
+        if (!res.ok) throw new Error("The assistant is temporarily unavailable.");
 
         const data = await res.json();
         return data.reply ?? data.text ?? "";
@@ -245,8 +246,8 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
         try {
             const answer = await callBackend(activeThread.id, outgoing);
             addMessage("assistant", answer || "(empty response)");
-        } catch (e: any) {
-            addMessage("assistant", "⚠️ " + (e?.message ?? String(e)));
+        } catch {
+            addMessage("assistant", "I’m having trouble connecting right now. Please try again in a moment.");
         } finally {
             setIsTyping(false);
             inputRef.current?.focus();
@@ -254,108 +255,136 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
     }
 
 
+    const isFresh = (activeThread?.messages.length ?? 0) <= 1;
+    const visibleMessages = isFresh
+        ? []
+        : activeThread?.messages.filter((message) => message.content !== WELCOME_MESSAGE) ?? [];
+
     return (
         <div className="cgpt-widget">
-        <div className="cgpt-shell">
-            {/* Sidebar */}
-            <aside className="cgpt-sidebar">
-    <div className="cgpt-side-top">
-    <div className="cgpt-brand">Geonwoo Resume Assistant</div>
-        <button className="cgpt-btn" onClick={newChat}>New question</button>
-        </div>
-
-        <div className="cgpt-thread-list">
-        {threads.map((t) => {
-                const active = t.id === activeThread?.id;
-                return (
-                    <div
-                        key={t.id}
-                className={`cgpt-thread ${active ? "is-active" : ""}`}
-                onClick={() => setActive(t.id)}
-                role="button"
-                tabIndex={0}
-                >
-                <div className="cgpt-thread-title">{t.title}</div>
-                    <div className="cgpt-thread-meta">
-                    <span>{formatDate(t.updatedAt)}</span>
-                <button
-                className="cgpt-link"
-                onClick={(e) => { e.stopPropagation(); deleteChat(t.id); }}
-                title="Delete"
-                    >
-                    Delete
-                    </button>
+            <div className="cgpt-shell">
+                <aside className="cgpt-sidebar" aria-label="Conversation history">
+                    <div className="cgpt-brand-block">
+                        <a className="cgpt-brand" href="/" aria-label="Geonwoo Lee home">
+                            <span className="cgpt-brand-mark">GL</span>
+                            <span><strong>Geonwoo AI</strong><small>Portfolio assistant</small></span>
+                        </a>
+                        <button className="cgpt-new" onClick={newChat}>
+                            <span aria-hidden="true">＋</span> New conversation
+                        </button>
                     </div>
+                    <div className="cgpt-history-label">Recent conversations</div>
+                    <div className="cgpt-thread-list">
+                        {threads.map((thread) => {
+                            const active = thread.id === activeThread?.id;
+                            return (
+                                <div
+                                    key={thread.id}
+                                    className={`cgpt-thread ${active ? "is-active" : ""}`}
+                                    onClick={() => setActive(thread.id)}
+                                    onKeyDown={(event) => {
+                                        if (event.key === "Enter" || event.key === " ") setActive(thread.id);
+                                    }}
+                                    role="button"
+                                    tabIndex={0}
+                                >
+                                    <span className="cgpt-thread-icon" aria-hidden="true">↗</span>
+                                    <span className="cgpt-thread-copy">
+                                        <span className="cgpt-thread-title">{thread.title}</span>
+                                        <span className="cgpt-thread-date">{formatDate(thread.updatedAt)}</span>
+                                    </span>
+                                    <button
+                                        className="cgpt-delete"
+                                        onClick={(event) => { event.stopPropagation(); deleteChat(thread.id); }}
+                                        title="Delete conversation"
+                                        aria-label={`Delete ${thread.title}`}
+                                    >×</button>
+                                </div>
+                            );
+                        })}
                     </div>
-            );
-            })}
-        </div>
-        </aside>
+                    <div className="cgpt-side-note">
+                        <span className="cgpt-status-dot" /> Resume-grounded answers
+                    </div>
+                </aside>
 
-    {/* Main */}
-    <section className="cgpt-main">
-    <header className="cgpt-main-top">
-    <div className="cgpt-main-title">{activeThread?.title ?? NEW_THREAD_TITLE}</div>
-    <p className="cgpt-main-subtitle">
-        Ask about Geonwoo's background, projects, skills, education, and experience.
-    </p>
-    <div className="cgpt-suggestions" aria-label="Suggested resume questions">
-        {SUGGESTED_QUESTIONS.map((question) => (
-            <button
-                key={question}
-                type="button"
-                className="cgpt-suggestion"
-                onClick={() => void onSend(question)}
-                disabled={isTyping}
-            >
-                {question}
-            </button>
-        ))}
-    </div>
-    </header>
+                <section className="cgpt-main">
+                    <header className="cgpt-main-top">
+                        <div>
+                            <span className="cgpt-kicker">CURRENT CONVERSATION</span>
+                            <div className="cgpt-main-title">{activeThread?.title ?? NEW_THREAD_TITLE}</div>
+                        </div>
+                        <div className="cgpt-header-actions">
+                            <span className="cgpt-online"><i /> Online</span>
+                            <button className="cgpt-mobile-new" onClick={newChat} aria-label="New conversation">＋</button>
+                        </div>
+                    </header>
 
-    <div className="cgpt-messages">
-        {activeThread?.messages.map((m) => (
-            <div key={m.id} className={`cgpt-row ${m.role === "user" ? "from-user" : "from-assistant"}`}>
-    <div className="cgpt-bubble">
-        <pre>{m.content}</pre>
-        </div>
-        </div>
-))}
+                    <div className={`cgpt-messages ${isFresh ? "is-fresh" : ""}`}>
+                        {isFresh && (
+                            <div className="cgpt-welcome">
+                                <div className="cgpt-orbit" aria-hidden="true"><span>GL</span><i>✦</i></div>
+                                <span className="cgpt-welcome-label">RESUME-POWERED AI</span>
+                                <h1>Ask me about<br /><em>Geonwoo’s work.</em></h1>
+                                <p>I can help you explore his research, engineering experience, projects, and background.</p>
+                                <div className="cgpt-prompt-grid" aria-label="Suggested resume questions">
+                                    {SUGGESTED_QUESTIONS.slice(0, 4).map((question, index) => (
+                                        <button key={question} type="button" onClick={() => void onSend(question)} disabled={isTyping}>
+                                            <span className="cgpt-prompt-number">0{index + 1}</span>
+                                            <span>{question}</span>
+                                            <b aria-hidden="true">↗</b>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
-    {isTyping && (
-        <div className="cgpt-row from-assistant">
-        <div className="cgpt-bubble">
-        <span className="cgpt-dots">
-            <i /><i /><i />
-            </span>
+                        {visibleMessages.map((message) => (
+                            <div key={message.id} className={`cgpt-row ${message.role === "user" ? "from-user" : "from-assistant"}`}>
+                                {message.role === "assistant" && <span className="cgpt-message-avatar">GL</span>}
+                                <div className="cgpt-message-wrap">
+                                    <span className="cgpt-message-meta">{message.role === "user" ? "You" : "Geonwoo AI"} · {formatTime(message.createdAt)}</span>
+                                    <div className="cgpt-bubble"><pre>{message.content}</pre></div>
+                                </div>
+                            </div>
+                        ))}
+
+                        {isTyping && (
+                            <div className="cgpt-row from-assistant">
+                                <span className="cgpt-message-avatar">GL</span>
+                                <div className="cgpt-message-wrap">
+                                    <span className="cgpt-message-meta">Geonwoo AI · thinking</span>
+                                    <div className="cgpt-bubble"><span className="cgpt-dots"><i /><i /><i /></span></div>
+                                </div>
+                            </div>
+                        )}
+                        <div ref={scrollRef} />
+                    </div>
+
+                    <footer className="cgpt-composer-wrap">
+                        <div className="cgpt-inputbar">
+                            <textarea
+                                ref={inputRef}
+                                value={input}
+                                onChange={(event) => setInput(event.target.value)}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter" && !event.shiftKey) {
+                                        event.preventDefault();
+                                        void onSend();
+                                    }
+                                }}
+                                placeholder="Ask about research, projects, or experience…"
+                                rows={1}
+                                aria-label="Ask Geonwoo AI"
+                            />
+                            <button className="cgpt-send" onClick={() => void onSend()} disabled={!input.trim() || isTyping} aria-label="Send question">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="m21 3-7.2 18-3.7-7.1L3 10.2 21 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
+                            </button>
+                        </div>
+                        <p>Grounded in Geonwoo’s résumé · AI may make mistakes</p>
+                    </footer>
+                </section>
             </div>
-            </div>
-    )}
-
-    <div ref={scrollRef} />
-    </div>
-
-    <footer className="cgpt-inputbar">
-    <textarea
-        ref={inputRef}
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                void onSend();
-            }
-        }}
-        placeholder="Ask about Geonwoo's resume..."
-        rows={1}
-    />
-    <button className="cgpt-send" onClick={() => void onSend()} disabled={!input.trim() || isTyping}>
-    Ask
-    </button>
-    </footer>
-    </section>
-    </div>
-    </div>
-);
+        </div>
+    );
 }
