@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var navList = document.querySelector("#navbar .navbar-nav");
   if (navList) {
     var navLinks = Array.from(navList.querySelectorAll(".nav-link[href]"));
-    var hiddenLegacyItems = ["publications", "repositories", "teaching", "people"];
+    var hiddenLegacyItems = ["blog", "publications", "repositories", "teaching", "people"];
 
     navLinks.forEach(function (link) {
       var label = link.textContent.trim().toLowerCase().replace("(current)", "").trim();
