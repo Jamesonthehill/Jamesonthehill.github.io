@@ -116,6 +116,7 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
 
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
+    const [historyOpen, setHistoryOpen] = useState(false);
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -137,6 +138,7 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
 
     function setActive(threadId: string) {
         setActiveId(threadId);
+        setHistoryOpen(false);
         setTimeout(() => inputRef.current?.focus(), 0);
     }
 
@@ -263,59 +265,47 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
     return (
         <div className="cgpt-widget">
             <div className="cgpt-shell">
-                <aside className="cgpt-sidebar" aria-label="Conversation history">
-                    <div className="cgpt-brand-block">
-                        <a className="cgpt-brand" href="/" aria-label="Geonwoo Lee home">
-                            <span className="cgpt-brand-mark">GL</span>
-                            <span><strong>Geonwoo AI</strong><small>Portfolio assistant</small></span>
-                        </a>
-                        <button className="cgpt-new" onClick={newChat}>
-                            <span aria-hidden="true">＋</span> New conversation
-                        </button>
+                <button
+                    className={`cgpt-drawer-scrim ${historyOpen ? "is-visible" : ""}`}
+                    onClick={() => setHistoryOpen(false)}
+                    aria-label="Close conversation history"
+                    aria-hidden={!historyOpen}
+                    tabIndex={historyOpen ? 0 : -1}
+                />
+                <aside className={`cgpt-history-drawer ${historyOpen ? "is-open" : ""}`} aria-label="Conversation history" aria-hidden={!historyOpen}>
+                    <div className="cgpt-drawer-top">
+                        <div><span>ARCHIVE</span><strong>Conversations</strong></div>
+                        <button onClick={() => setHistoryOpen(false)} aria-label="Close conversation history">×</button>
                     </div>
-                    <div className="cgpt-history-label">Recent conversations</div>
+                    <button className="cgpt-new" onClick={() => { newChat(); setHistoryOpen(false); }}><span aria-hidden="true">＋</span> Start fresh</button>
                     <div className="cgpt-thread-list">
-                        {threads.map((thread) => {
-                            const active = thread.id === activeThread?.id;
-                            return (
-                                <div
-                                    key={thread.id}
-                                    className={`cgpt-thread ${active ? "is-active" : ""}`}
-                                    onClick={() => setActive(thread.id)}
-                                    onKeyDown={(event) => {
-                                        if (event.key === "Enter" || event.key === " ") setActive(thread.id);
-                                    }}
-                                    role="button"
-                                    tabIndex={0}
-                                >
-                                    <span className="cgpt-thread-icon" aria-hidden="true">↗</span>
-                                    <span className="cgpt-thread-copy">
-                                        <span className="cgpt-thread-title">{thread.title}</span>
-                                        <span className="cgpt-thread-date">{formatDate(thread.updatedAt)}</span>
-                                    </span>
-                                    <button
-                                        className="cgpt-delete"
-                                        onClick={(event) => { event.stopPropagation(); deleteChat(thread.id); }}
-                                        title="Delete conversation"
-                                        aria-label={`Delete ${thread.title}`}
-                                    >×</button>
-                                </div>
-                            );
-                        })}
+                    {threads.map((thread, index) => {
+                        const active = thread.id === activeThread?.id;
+                        return (
+                            <div key={thread.id} className={`cgpt-thread ${active ? "is-active" : ""}`} onClick={() => setActive(thread.id)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") setActive(thread.id); }} role="button" tabIndex={0}>
+                                <span className="cgpt-thread-index">{String(index + 1).padStart(2, "0")}</span>
+                                <span className="cgpt-thread-copy"><span className="cgpt-thread-title">{thread.title}</span><span className="cgpt-thread-date">{formatDate(thread.updatedAt)}</span></span>
+                                <button className="cgpt-delete" onClick={(event) => { event.stopPropagation(); deleteChat(thread.id); }} title="Delete conversation" aria-label={`Delete ${thread.title}`}>×</button>
+                            </div>
+                        );
+                    })}
                     </div>
-                    <div className="cgpt-side-note">
-                        <span className="cgpt-status-dot" /> Resume-grounded answers
-                    </div>
+                    <div className="cgpt-side-note"><span className="cgpt-status-dot" /> Stored on this device</div>
                 </aside>
 
                 <section className="cgpt-main">
                     <header className="cgpt-main-top">
-                        <div>
+                        <a className="cgpt-header-brand" href="/" aria-label="Geonwoo Lee home">
+                            <span className="cgpt-brand-mark">GL</span>
+                            <span><strong>Geonwoo AI</strong><small>Portfolio intelligence</small></span>
+                        </a>
+                        <div className="cgpt-thread-heading">
+                            <span>NOW EXPLORING</span>
                             <div className="cgpt-main-title">{activeThread?.title ?? NEW_THREAD_TITLE}</div>
                         </div>
                         <div className="cgpt-header-actions">
-                            <span className="cgpt-online"><i /> Online</span>
-                            <button className="cgpt-mobile-new" onClick={newChat} aria-label="New conversation">＋</button>
+                            <button className="cgpt-header-button" onClick={() => setHistoryOpen(true)}><span aria-hidden="true">☷</span> History</button>
+                            <button className="cgpt-header-button is-primary" onClick={newChat}><span aria-hidden="true">＋</span> New</button>
                         </div>
                     </header>
 
@@ -343,7 +333,7 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
                                 {message.role === "assistant" && <span className="cgpt-message-avatar">GL</span>}
                                 <div className="cgpt-message-wrap">
                                     <span className="cgpt-message-meta">{message.role === "user" ? "You" : "Geonwoo AI"} · {formatTime(message.createdAt)}</span>
-                                    <div className="cgpt-bubble"><pre>{message.content}</pre></div>
+                                    <div className={`cgpt-bubble ${message.role === "assistant" ? "cgpt-answer" : ""}`}><pre>{message.content}</pre></div>
                                 </div>
                             </div>
                         ))}
