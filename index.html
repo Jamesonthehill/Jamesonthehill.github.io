@@ -20,6 +20,7 @@
           media="" id="highlight_theme_light">
     <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%E2%9A%9B%EF%B8%8F&lt;/text&gt;&lt;/svg&gt;">
     <link rel="stylesheet" href="/assets/css/main.css?d41d8cd98f00b204e9800998ecf8427e">
+    <link rel="stylesheet" href="/assets/css/portfolio-refresh.css">
 
     <link rel="canonical" href="https://jamesonthehill.github.io/">
     <script src="/assets/js/theme.js?9a0c749ec5240d9cda97bc72359a72c0"></script>
@@ -239,10 +240,41 @@
 <div class="container mt-5" role="main">
     <div class="post">
         <header class="post-header">
+            <p class="hero-eyebrow">Hello, I’m</p>
             <h1 class="post-title">
                 <span class="font-weight-bold">Geonwoo</span> Lee
             </h1>
-            <p class="desc">Explore, Experiment, and Enjoy</p>
+            <p class="hero-role">AI Researcher &amp; Software Engineer</p>
+            <p class="desc">I design intelligent systems that help people explore, reason, and learn.</p>
+            <div class="hero-actions" aria-label="Quick links">
+                <a class="hero-action primary" href="/projects/">Explore my work <span aria-hidden="true">↗</span></a>
+                <a class="hero-action" href="mailto:dlrjsdn5333@gmail.com">Start a conversation</a>
+            </div>
+            <div class="hero-socials" aria-label="Professional profiles">
+                <a class="hero-social github" href="https://github.com/Jamesonthehill" target="_blank" rel="external nofollow noopener">
+                    <span class="hero-social-mark" aria-hidden="true">GH</span>
+                    <span><small>Browse my code</small><strong>GitHub</strong></span>
+                    <b aria-hidden="true">↗</b>
+                </a>
+                <a class="hero-social linkedin" href="https://www.linkedin.com/in/geonwoo-lee-954a06338" target="_blank" rel="external nofollow noopener" aria-label="Geonwoo Lee on LinkedIn">
+                    <span class="hero-social-mark" aria-hidden="true">in</span>
+                    <span class="hero-social-label">LinkedIn</span>
+                </a>
+            </div>
+            <dl class="hero-specs" aria-label="Profile snapshot">
+                <div>
+                    <dt>Education</dt>
+                    <dd>M.S. Computer Science</dd>
+                </div>
+                <div>
+                    <dt>Focus</dt>
+                    <dd>RAG · Human-centered AI</dd>
+                </div>
+                <div>
+                    <dt>Based in</dt>
+                    <dd>North Carolina, USA</dd>
+                </div>
+            </dl>
         </header>
         <article>
             <div class="profile float-right">
@@ -265,9 +297,10 @@
 
 				<p style="font-size: 1.1em;">My research interests include <strong>neural networks and deep learning, RAG, ontologies and knowledge representation, human-centered AI, and intent-aware AI systems</strong>. I’m particularly interested in combining structured knowledge with learning methods to develop AI pipelines that better understand human intent. Through this work, I hope to build systems that help people explore information, reason through questions, and achieve their goals.</p>
             </div>
-            <h2 style="color: inherit">
-                news
-            </h2>
+            <div class="section-heading milestones-heading">
+                <p>My journey</p>
+                <h2>Experience &amp; milestones</h2>
+            </div>
             <div class="news">
                 <div class="table-responsive">
                     <table class="table table-sm table-borderless">
@@ -303,6 +336,29 @@
                     </table>
                 </div>
             </div>
+            <section class="portfolio-expertise" aria-labelledby="expertise-title">
+                <div class="section-heading">
+                    <p>What I work with</p>
+                    <h2 id="expertise-title">Skills &amp; expertise</h2>
+                </div>
+                <div class="expertise-grid">
+                    <article class="expertise-card">
+                        <span class="expertise-icon" aria-hidden="true">01</span>
+                        <h3>AI &amp; knowledge systems</h3>
+                        <p>Retrieval-augmented generation, GraphRAG, vector stores, ontologies, and knowledge representation.</p>
+                    </article>
+                    <article class="expertise-card">
+                        <span class="expertise-icon" aria-hidden="true">02</span>
+                        <h3>Research &amp; evaluation</h3>
+                        <p>Human-centered AI, Socratic learning systems, deep learning, experiment design, and technical communication.</p>
+                    </article>
+                    <article class="expertise-card">
+                        <span class="expertise-icon" aria-hidden="true">03</span>
+                        <h3>Full-stack engineering</h3>
+                        <p>React, TypeScript, Java, Spring Boot, PostgreSQL, AWS, and production-oriented application development.</p>
+                    </article>
+                </div>
+            </section>
           <!--   <h2>
                 <a href="/blog/" style="color: inherit">latest posts</a>
             </h2>
@@ -332,8 +388,10 @@
            -->  <div class="social">
                 <div class="contact-icons">
                     <a href="mailto:dlrjsdn5333@gmail.com" title="email"><i class="fa-solid fa-envelope"></i></a>
-                    <a href="https://jamesonthehill.github.io/" title="Github" rel="external nofollow noopener"
+                    <a href="https://github.com/Jamesonthehill" title="GitHub" rel="external nofollow noopener"
                        target="_blank"><i class="fa-brands fa-github"></i></a>
+                    <a href="https://www.linkedin.com/in/geonwoo-lee-954a06338" title="LinkedIn" rel="external nofollow noopener"
+                       target="_blank"><i class="fa-brands fa-linkedin"></i></a>
 <!--                     <a href="https://inspirehep.net/authors/1010907" title="Inspire HEP" rel="external nofollow noopener" target="_blank"><i
                             class="ai ai-inspire"></i></a> -->
                     <a href="https://jamesonthehill.github.io/feed.xml" title="RSS Feed"><i class="fa-solid fa-square-rss"></i></a>
@@ -362,6 +420,8 @@
         <button id="send-btn" type="submit">Send</button>
     </form>
 </div>
+
+<ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys>
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 <script src="/assets/js/bootstrap.bundle.min.js"></script>
