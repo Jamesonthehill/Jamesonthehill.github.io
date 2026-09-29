@@ -311,7 +311,6 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
                 <section className="cgpt-main">
                     <header className="cgpt-main-top">
                         <div>
-                            <span className="cgpt-kicker">CURRENT CONVERSATION</span>
                             <div className="cgpt-main-title">{activeThread?.title ?? NEW_THREAD_TITLE}</div>
                         </div>
                         <div className="cgpt-header-actions">
@@ -328,7 +327,7 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
                                 <h1>Ask me about<br /><em>Geonwoo’s work.</em></h1>
                                 <p>I can help you explore his research, engineering experience, projects, and background.</p>
                                 <div className="cgpt-prompt-grid" aria-label="Suggested resume questions">
-                                    {SUGGESTED_QUESTIONS.slice(0, 4).map((question, index) => (
+                                    {SUGGESTED_QUESTIONS.slice(0, 2).map((question, index) => (
                                         <button key={question} type="button" onClick={() => void onSend(question)} disabled={isTyping}>
                                             <span className="cgpt-prompt-number">0{index + 1}</span>
                                             <span>{question}</span>
