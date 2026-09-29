@@ -206,19 +206,6 @@
     return node;
   }
 
-  function describe(task) {
-    return (
-      (AREAS[task.area] || task.area) +
-      " \u00b7 " +
-      task.effortMinutes +
-      " min \u00b7 " +
-      (ENERGY[task.energy] || ENERGY.steady).label +
-      " energy \u00b7 impact " +
-      task.impact +
-      "/5"
-    );
-  }
-
   function renderStats(ranked) {
     var open = state.tasks.filter(function (task) {
       return !task.completedAt;
@@ -269,7 +256,6 @@
       heading.appendChild(el("span", "sr-only", "Priority " + entry.rank + ": "));
       heading.appendChild(document.createTextNode(entry.task.title));
       body.appendChild(heading);
-      body.appendChild(el("div", "pri-meta", describe(entry.task)));
 
       var reasons = el("ul", "pri-reasons");
       entry.reasons.forEach(function (reason) {
@@ -389,7 +375,6 @@
 
       var body = el("div", "pri-body");
       body.appendChild(el("h3", null, task.title));
-      body.appendChild(el("div", "pri-meta", describe(task)));
       if (task.notes) body.appendChild(el("div", "pri-meta", task.notes));
       row.appendChild(body);
 
