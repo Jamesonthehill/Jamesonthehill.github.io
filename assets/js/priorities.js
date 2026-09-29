@@ -2,7 +2,8 @@
  * Daily priorities planner.
  *
  * Ranks a short daily task list against the situation you are actually in, and
- * explains every position. All data stays in this browser's localStorage.
+ * explains every position. Data is cached locally and synchronized through the
+ * portfolio backend to its Supabase database.
  */
 (function () {
   "use strict";
@@ -11,6 +12,8 @@
   if (!root) return;
 
   var STORAGE_KEY = "jth_priority_planner_v1";
+  var OWNER_KEY = "jth_priority_planner_owner_v1";
+  var API_BASE = "https://chatbot-backend-zto2.onrender.com/api/schedule";
   var TOP_LIMIT = 10;
   var DAILY_MIN = 5;
   var DAILY_MAX = 8;
@@ -25,6 +28,10 @@
 
   var state = { tasks: [], situation: null };
   var editingId = null;
+  var ownerId = getOwnerId();
+  var syncTimer = null;
+  var remoteReady = false;
+  var changedBeforeRemoteLoad = false;
 
   /* ---------------------------------------------------------------- scoring */
 
@@ -172,13 +179,84 @@
     }
   }
 
-  function save() {
+  function getOwnerId() {
+    try {
+      var existing = window.localStorage.getItem(OWNER_KEY);
+      if (existing) return existing;
+      var created = newId();
+      window.localStorage.setItem(OWNER_KEY, created);
+      return created;
+    } catch (err) {
+      return newId();
+    }
+  }
+
+  function saveLocal() {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      showAlert("");
     } catch (err) {
       showAlert("This browser blocked local storage, so today\u2019s plan is not saved.");
     }
+  }
+
+  function syncRemote() {
+    window.clearTimeout(syncTimer);
+    syncTimer = window.setTimeout(function () {
+      fetch(API_BASE + "/" + encodeURIComponent(ownerId), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ state: state }),
+      })
+        .then(function (response) {
+          if (!response.ok) throw new Error("sync failed");
+          showAlert("");
+        })
+        .catch(function () {
+          showAlert("Your changes are saved on this device. Cloud sync will retry with your next change.");
+        });
+    }, 450);
+  }
+
+  function save() {
+    saveLocal();
+    if (!remoteReady) changedBeforeRemoteLoad = true;
+    syncRemote();
+  }
+
+  function applyState(nextState) {
+    var situation = cloneSituation(DEFAULT_SITUATION);
+    if (nextState && nextState.situation) {
+      for (var key in situation) {
+        if (nextState.situation[key] !== undefined) situation[key] = nextState.situation[key];
+      }
+    }
+    state = { tasks: nextState && Array.isArray(nextState.tasks) ? nextState.tasks : [], situation: situation };
+    dayInput.value = state.situation.label;
+    minutesInput.value = state.situation.minutesAvailable;
+    energyInput.value = state.situation.energy;
+    focusInput.value = state.situation.focus;
+    saveLocal();
+    render();
+  }
+
+  function loadRemote() {
+    fetch(API_BASE + "/" + encodeURIComponent(ownerId))
+      .then(function (response) {
+        if (!response.ok) throw new Error("load failed");
+        return response.json();
+      })
+      .then(function (payload) {
+        remoteReady = true;
+        if (payload.state && !changedBeforeRemoteLoad) {
+          applyState(payload.state);
+        } else {
+          syncRemote();
+        }
+      })
+      .catch(function () {
+        remoteReady = true;
+        showAlert("Using this device's saved plan. Cloud sync is temporarily unavailable.");
+      });
   }
 
   function cloneSituation(source) {
@@ -357,7 +435,7 @@
     if (!state.tasks.length) {
       var empty = el("div", "pri-empty");
       empty.appendChild(el("strong", null, "No tasks captured yet"));
-      empty.appendChild(el("span", null, "Your list lives only in this browser and is never sent to a server."));
+      empty.appendChild(el("span", null, "Your plan will sync automatically after you add the first task."));
       wrap.appendChild(empty);
       return;
     }
@@ -473,4 +551,5 @@
   });
 
   render();
+  loadRemote();
 })();

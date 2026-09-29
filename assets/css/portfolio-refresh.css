@@ -159,15 +159,6 @@ body[data-portfolio-page="home"] article > .clearfix p { font-size: .94rem !impo
 footer.fixed-bottom { background: var(--pf-surface-soft) !important; border: 0 !important; color: var(--pf-muted) !important; font-size: .68rem; position: static !important; }
 footer.fixed-bottom .container { max-width: 1120px !important; padding: 1.5rem 15px; text-align: center !important; }
 
-/* Chat */
-#chat-toggle { background: var(--pf-accent) !important; border: 0 !important; border-radius: 50% !important; box-shadow: 0 12px 30px rgba(77,55,167,.3) !important; height: 54px !important; transition: transform .18s ease; width: 54px !important; }
-#chat-toggle:hover { filter: none !important; transform: translateY(-3px); }
-#chat-widget { background: var(--pf-surface) !important; border: 1px solid var(--pf-line); border-radius: var(--pf-radius) !important; box-shadow: var(--pf-shadow) !important; color: var(--pf-ink); }
-#chat-header { background: var(--pf-accent) !important; color: #fff !important; }
-#chat,#form { background: var(--pf-surface) !important; border-color: var(--pf-line) !important; }
-#input { background: var(--pf-bg); border-color: var(--pf-line) !important; color: var(--pf-ink); }
-#send-btn,.msg.user span { background: var(--pf-accent) !important; }
-.msg.bot span { background: var(--pf-accent-soft) !important; color: var(--pf-ink) !important; }
 .priorities-page,.priorities-shell,.schedule-shell,.priority-shell { color: var(--pf-ink); }
 body :focus-visible { outline: 3px solid color-mix(in srgb,var(--pf-accent) 70%,transparent); outline-offset: 3px; }
 
@@ -250,7 +241,6 @@ body :focus-visible { outline: 3px solid color-mix(in srgb,var(--pf-accent) 70%,
   .news tr::before { left: 2px; top: 1.55rem; }
   .news th { text-align: left; }
   .hero-socials { align-items: stretch; flex-wrap: wrap; }
-  #chat-widget { bottom: 82px !important; left: 12px; max-height: 68vh !important; right: 12px !important; width: auto !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
