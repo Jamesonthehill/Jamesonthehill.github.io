@@ -158,6 +158,8 @@ body[data-portfolio-page="home"] article > .clearfix p { font-size: .94rem !impo
 .social .contact-note { color: var(--pf-muted) !important; font-size: .72rem; margin-top: .5rem; }
 footer.fixed-bottom { background: var(--pf-surface-soft) !important; border: 0 !important; color: var(--pf-muted) !important; font-size: .68rem; position: static !important; }
 footer.fixed-bottom .container { max-width: 1120px !important; padding: 1.5rem 15px; text-align: center !important; }
+html[data-theme="light"] footer.fixed-bottom,
+html[data-theme="light"] footer.fixed-bottom .container { color: #000 !important; }
 
 .priorities-page,.priorities-shell,.schedule-shell,.priority-shell { color: var(--pf-ink); }
 body :focus-visible { outline: 3px solid color-mix(in srgb,var(--pf-accent) 70%,transparent); outline-offset: 3px; }
