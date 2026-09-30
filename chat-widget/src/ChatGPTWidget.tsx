@@ -113,6 +113,12 @@ function formatTime(ts: number) {
     return new Date(ts).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 }
 
+function formatElapsed(seconds: number) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+}
+
 export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
     const [threads, setThreads] = useState<Thread[]>(() => {
         const saved = safeLoad();
@@ -134,6 +140,7 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
 
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
+    const [elapsedSeconds, setElapsedSeconds] = useState(0);
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -152,6 +159,15 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
     useEffect(() => {
         scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     }, [activeThread?.messages.length, isTyping]);
+
+    useEffect(() => {
+        if (!isTyping) return;
+        const startedAt = Date.now();
+        const timer = window.setInterval(() => {
+            setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
+        }, 1000);
+        return () => window.clearInterval(timer);
+    }, [isTyping]);
 
     function setActive(threadId: string) {
         setActiveId(threadId);
@@ -257,6 +273,7 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
         // Optimistically add user message to UI
         addMessage("user", text);
 
+        setElapsedSeconds(0);
         setIsTyping(true);
 
         try {
@@ -374,7 +391,9 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
                             <div className="cgpt-row from-assistant">
                                 <span className="cgpt-message-avatar">SQ</span>
                                 <div className="cgpt-message-wrap">
-                                    <span className="cgpt-message-meta">Socratic Tutor · thinking</span>
+                                    <span className="cgpt-message-meta" aria-live="polite">
+                                        Socratic Tutor · Answering · {formatElapsed(elapsedSeconds)}
+                                    </span>
                                     <div className="cgpt-bubble"><span className="cgpt-dots"><i /><i /><i /></span></div>
                                 </div>
                             </div>
