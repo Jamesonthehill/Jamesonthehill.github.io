@@ -9,21 +9,39 @@ type Thread = {
     createdAt: number;
     updatedAt: number;
     messages: Msg[];
+    learningTopic?: string;
+    engineState?: Record<string, unknown>;
 };
 
-const STORAGE_KEY = "cgpt_widget_threads_v1";
+type SocraticResponse = {
+    answer: string;
+    conversation_id: string;
+    learning_topic: string;
+    socratic: Record<string, unknown>;
+};
+
+function isSocraticResponse(value: unknown): value is SocraticResponse {
+    if (!value || typeof value !== "object") return false;
+    const response = value as Record<string, unknown>;
+    return (
+        typeof response.answer === "string" &&
+        typeof response.conversation_id === "string" &&
+        typeof response.learning_topic === "string" &&
+        !!response.socratic &&
+        typeof response.socratic === "object"
+    );
+}
+
+const STORAGE_KEY = "socratic_widget_threads_v1";
 const WELCOME_MESSAGE =
-    "Hi, I'm Geonwoo's resume assistant. Ask me about his projects, interests, experience, education, or contact information. If this is your first question, please allow about 15 seconds for the server to wake up.";
-const NEW_THREAD_TITLE = "Resume question";
+    "Choose something you want to understand. I’ll guide your thinking with one focused question at a time rather than simply giving you an answer.";
+const NEW_THREAD_TITLE = "Learning question";
 const SUGGESTED_QUESTIONS = [
-    "What projects has Geonwoo built?",
-    "What are Geonwoo's technical interests?",
-    "Does Geonwoo have research experience?",
-    "Tell me about Geonwoo's education.",
-    "How can I contact Geonwoo?",
+    "Help me understand why version control matters.",
+    "How should I reason about software trade-offs?",
+    "Teach me the difference between verification and validation.",
+    "I want to think more clearly about career priorities.",
 ];
-const CONTACT_QUESTION = "How can I contact Geonwoo?";
-const CONTACT_ANSWER = "You can contact Geonwoo at dlrjsdn5333@gmail.com or 7042581759.";
 
 function uid() {
     if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -200,25 +218,29 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
         });
     }
 
-    async function callBackend(threadId: string, nextMessages: ({ role: "user" | "assistant"; content: string } | {
-        role: string;
-        content: string
-    })[]) {
+    async function callBackend(thread: Thread, nextMessages: { role: Role; content: string }[]) {
         if (!backendUrl) throw new Error("backendUrl is empty. Pass it from mount().");
+        const latest = nextMessages[nextMessages.length - 1];
 
         const res = await fetch(backendUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                threadId,            // ✅ add this
-                messages: nextMessages,
+                conversation_id: thread.id,
+                message: latest.content,
+                history: nextMessages.slice(0, -1).slice(-12),
+                learning_topic: thread.learningTopic,
+                engine_state: thread.engineState ?? {},
             }),
         });
 
         if (!res.ok) throw new Error("The assistant is temporarily unavailable.");
 
-        const data = await res.json();
-        return data.reply ?? data.text ?? "";
+        const data: unknown = await res.json();
+        if (!isSocraticResponse(data)) {
+            throw new Error("The Socratic service returned an invalid response.");
+        }
+        return data;
     }
     async function onSend(prompt?: string) {
         const text = (prompt ?? input).trim();
@@ -235,17 +257,17 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
         // Optimistically add user message to UI
         addMessage("user", text);
 
-        if (text === CONTACT_QUESTION) {
-            addMessage("assistant", CONTACT_ANSWER);
-            inputRef.current?.focus();
-            return;
-        }
-
         setIsTyping(true);
 
         try {
-            const answer = await callBackend(activeThread.id, outgoing);
-            addMessage("assistant", answer || "(empty response)");
+            const result = await callBackend(activeThread, outgoing);
+            updateThread(activeThread.id, (thread) => ({
+                ...thread,
+                learningTopic: result.learning_topic,
+                engineState: result.socratic,
+                updatedAt: now(),
+            }));
+            addMessage("assistant", result.answer || "(empty response)");
         } catch {
             addMessage("assistant", "I’m having trouble connecting right now. Please try again in a moment.");
         } finally {
@@ -265,9 +287,9 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
             <div className="cgpt-shell">
                 <aside className="cgpt-sidebar" aria-label="Conversation history">
                     <div className="cgpt-brand-block">
-                        <a className="cgpt-brand" href="/" aria-label="Geonwoo Lee home">
-                            <span className="cgpt-brand-mark">GL</span>
-                            <span><strong>Geonwoo AI</strong><small>Portfolio assistant</small></span>
+                        <a className="cgpt-brand" href="/" aria-label="Socratic Questioning Lab">
+                            <span className="cgpt-brand-mark">SQ</span>
+                            <span><strong>Socratic Lab</strong><small>Questioning tutor</small></span>
                         </a>
                         <button className="cgpt-new" onClick={newChat}>
                             <span aria-hidden="true">＋</span> New conversation
@@ -304,7 +326,7 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
                         })}
                     </div>
                     <div className="cgpt-side-note">
-                        <span className="cgpt-status-dot" /> Resume-grounded answers
+                        <span className="cgpt-status-dot" /> Adaptive guided questions
                     </div>
                 </aside>
 
@@ -322,11 +344,11 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
                     <div className={`cgpt-messages ${isFresh ? "is-fresh" : ""}`}>
                         {isFresh && (
                             <div className="cgpt-welcome">
-                                <div className="cgpt-orbit" aria-hidden="true"><span>GL</span><i>✦</i></div>
-                                <span className="cgpt-welcome-label">RESUME-POWERED AI</span>
-                                <h1>Ask me about<br /><em>Geonwoo’s work.</em></h1>
-                                <p>I can help you explore his research, engineering experience, projects, and background.</p>
-                                <div className="cgpt-prompt-grid" aria-label="Suggested resume questions">
+                                <div className="cgpt-orbit" aria-hidden="true"><span>SQ</span><i>✦</i></div>
+                                <span className="cgpt-welcome-label">SOCRATIC LEARNING AI</span>
+                                <h1>Think it through,<br /><em>one question at a time.</em></h1>
+                                <p>Choose a topic and build your understanding through adaptive guided questions.</p>
+                                <div className="cgpt-prompt-grid" aria-label="Suggested learning questions">
                                     {SUGGESTED_QUESTIONS.slice(0, 2).map((question, index) => (
                                         <button key={question} type="button" onClick={() => void onSend(question)} disabled={isTyping}>
                                             <span className="cgpt-prompt-number">0{index + 1}</span>
@@ -340,9 +362,9 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
 
                         {visibleMessages.map((message) => (
                             <div key={message.id} className={`cgpt-row ${message.role === "user" ? "from-user" : "from-assistant"}`}>
-                                {message.role === "assistant" && <span className="cgpt-message-avatar">GL</span>}
+                                {message.role === "assistant" && <span className="cgpt-message-avatar">SQ</span>}
                                 <div className="cgpt-message-wrap">
-                                    <span className="cgpt-message-meta">{message.role === "user" ? "You" : "Geonwoo AI"} · {formatTime(message.createdAt)}</span>
+                                    <span className="cgpt-message-meta">{message.role === "user" ? "You" : "Socratic Tutor"} · {formatTime(message.createdAt)}</span>
                                     <div className="cgpt-bubble"><pre>{message.content}</pre></div>
                                 </div>
                             </div>
@@ -350,9 +372,9 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
 
                         {isTyping && (
                             <div className="cgpt-row from-assistant">
-                                <span className="cgpt-message-avatar">GL</span>
+                                <span className="cgpt-message-avatar">SQ</span>
                                 <div className="cgpt-message-wrap">
-                                    <span className="cgpt-message-meta">Geonwoo AI · thinking</span>
+                                    <span className="cgpt-message-meta">Socratic Tutor · thinking</span>
                                     <div className="cgpt-bubble"><span className="cgpt-dots"><i /><i /><i /></span></div>
                                 </div>
                             </div>
@@ -372,15 +394,15 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
                                         void onSend();
                                     }
                                 }}
-                                placeholder="Ask about research, projects, or experience…"
+                                placeholder="What would you like to understand?"
                                 rows={1}
-                                aria-label="Ask Geonwoo AI"
+                                aria-label="Ask the Socratic tutor"
                             />
                             <button className="cgpt-send" onClick={() => void onSend()} disabled={!input.trim() || isTyping} aria-label="Send question">
                                 <svg viewBox="0 0 24 24" fill="none"><path d="m21 3-7.2 18-3.7-7.1L3 10.2 21 3Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg>
                             </button>
                         </div>
-                        <p>Grounded in Geonwoo’s résumé · AI may make mistakes</p>
+                        <p>Guided by your reasoning · AI may make mistakes</p>
                     </footer>
                 </section>
             </div>
