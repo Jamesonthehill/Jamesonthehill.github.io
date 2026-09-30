@@ -37,10 +37,10 @@ const WELCOME_MESSAGE =
     "Choose something you want to understand. I’ll guide your thinking with one focused question at a time rather than simply giving you an answer.";
 const NEW_THREAD_TITLE = "Learning question";
 const SUGGESTED_QUESTIONS = [
-    "Help me understand why version control matters.",
-    "How should I reason about software trade-offs?",
-    "Teach me the difference between verification and validation.",
-    "I want to think more clearly about career priorities.",
+    "What experience does Geonwoo have with RAG and AI systems?",
+    "What did Geonwoo work on during his EPRI internship?",
+    "Which projects demonstrate Geonwoo’s software engineering skills?",
+    "How has Geonwoo combined AI research with full-stack development?",
 ];
 
 function uid() {
