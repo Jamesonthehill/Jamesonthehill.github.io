@@ -42,6 +42,11 @@ const SUGGESTED_QUESTIONS = [
     "Which projects demonstrate Geonwoo’s software engineering skills?",
     "How has Geonwoo combined AI research with full-stack development?",
 ];
+const THINKING_NOTES = [
+    "Reading your question",
+    "Tracing the key idea",
+    "Shaping the next question",
+];
 
 function uid() {
     if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -117,6 +122,10 @@ function formatElapsed(seconds: number) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+}
+
+function thinkingNote(seconds: number) {
+    return THINKING_NOTES[Math.floor(seconds / 4) % THINKING_NOTES.length];
 }
 
 export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
@@ -394,7 +403,15 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
                                     <span className="cgpt-message-meta" aria-live="polite">
                                         Socratic Tutor · Answering · {formatElapsed(elapsedSeconds)}
                                     </span>
-                                    <div className="cgpt-bubble"><span className="cgpt-dots"><i /><i /><i /></span></div>
+                                    <div className="cgpt-bubble cgpt-thinking-bubble">
+                                        <span className="cgpt-thinking-orbit" aria-hidden="true">
+                                            <b>?</b><i /><i /><i />
+                                        </span>
+                                        <span className="cgpt-thinking-copy">
+                                            {thinkingNote(elapsedSeconds)}
+                                            <small>Thinking with you</small>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         )}
