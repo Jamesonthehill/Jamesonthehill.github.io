@@ -1,6 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import ChatGPTWidget from "./ChatGPTWidget";
+import GuidedDemo from "./GuidedDemo";
 import "./widget.css";
 import "./widget-modern.css";
 
@@ -12,7 +12,7 @@ function mount(selector = "#chat-root", opts?: { backendUrl?: string }) {
 
     if (root) root.unmount();
     root = createRoot(el);
-    root.render(<ChatGPTWidget backendUrl={opts?.backendUrl || ""} />);
+    root.render(<GuidedDemo backendUrl={opts?.backendUrl || ""} />);
 }
 
 function unmount() {

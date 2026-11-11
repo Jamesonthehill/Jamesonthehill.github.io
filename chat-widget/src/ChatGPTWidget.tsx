@@ -274,7 +274,7 @@ export default function ChatGPTWidget({ backendUrl }: { backendUrl: string }) {
         setInput("");
 
         // Build the message list to send BEFORE state updates
-        const outgoing = [
+        const outgoing: { role: Role; content: string }[] = [
             ...(activeThread.messages ?? []).map((m) => ({ role: m.role, content: m.content })),
             { role: "user", content: text },
         ];
