@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:guided": "node --test tests/guided-design.test.mjs"
+    "test:guided": "node --test tests/guided-design.test.mjs tests/server-readiness.test.mjs"
   },
   "dependencies": {
     "cors": "^2.8.6",

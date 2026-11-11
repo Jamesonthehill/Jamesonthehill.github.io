@@ -19,10 +19,13 @@ test('local-style tutorial, documents, active loading, detour, and step controls
     URL.createObjectURL = () => 'blob:test-upload';
     URL.revokeObjectURL = () => {};
     let calls = 0;
+    let healthCalls = 0;
+    let healthResolve;
     const first = {role:'assistant', content:'Step 1: Review the feedback\n\nA teammate reports a crash.\n\nWhat would you check first?',lead_in:'Step 1: Review the feedback\n\nA teammate reports a crash.',next_thinking_step:'What would you check first?'};
     const session = {messages:[first],socratic:{learning_step_index:0,next_thinking_step:first.next_thinking_step},steps:[{title:'Review the feedback',goal:'Inspect the issue'},{title:'Respond',goal:'Explain a fix'},{title:'Check the fix',goal:'Test the behavior'}],material:'A reviewer inspects behavior and identifies edge cases. The author adds tests before merging.',document_title:'Uploaded lesson.tex',document_token:'signed-test-document',conversation_id:'fixture'};
     let resolver;
     globalThis.fetch = async (_url, request) => {
+        if (_url.endsWith('/health')) {healthCalls++;return new Promise(resolve=>{healthResolve=()=>resolve({ok:true,json:async()=>({status:'ok'})});});}
         calls++;
         if (request.body instanceof FormData) return {ok:true,json:async()=>({document_token:'signed-test-document',title:'lesson.tex'})};
         const body=JSON.parse(request.body);
@@ -52,17 +55,26 @@ test('local-style tutorial, documents, active loading, detour, and step controls
         assert.equal(modeButtons[0].getAttribute('aria-pressed'), 'true');
         assert.equal(document.querySelector('footer textarea'),null);
         assert.doesNotMatch(document.body.textContent,/Code review|Start sample/);
-        assert.ok(byText('＋ Upload document'));
+        assert.ok(byText('Start'));
+        assert.equal(document.querySelector('input[type="file"]').disabled,true);
         await click(modeButtons[1]);
         assert.equal(modeButtons[1].getAttribute('aria-pressed'), 'true');
         assert.match(document.querySelector('.guided-tool-icon img').src,/socrates\.jpg$/);
         assert.equal(calls,0);
+        await click(byText('Start'));
+        assert.equal(healthCalls,1);
+        assert.equal(document.querySelector('input[type="file"]').disabled,true);
+        assert.ok(document.querySelector('.guided-processing-card'));
         await click(byText('Tutorial'));
         assert.ok(document.querySelector('[role="dialog"]'));
         assert.equal(document.querySelectorAll('.guided-tour-shade').length,4);
         await click(byText('Next')); assert.match(document.querySelector('.guided-tour-card').textContent,/Read before you begin/);
         await click(document.querySelector('[aria-label="Close tutorial"]'));
+        await act(async()=>healthResolve());
         const input = document.querySelector('input[type="file"]');
+        assert.equal(input.disabled,false);
+        assert.equal(document.querySelector('.guided-processing-card'),null);
+        assert.equal(healthCalls,1);
         Object.defineProperty(input,'files',{configurable:true,value:[new File(['not allowed'],'bad.exe')]});
         await act(async()=>input.dispatchEvent(new Event('change',{bubbles:true})));
         assert.match(document.querySelector('[role="alertdialog"]').textContent,/PDF, Word/);
