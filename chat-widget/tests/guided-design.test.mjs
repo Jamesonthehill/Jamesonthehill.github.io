@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import { createServer } from 'vite';
@@ -30,6 +31,14 @@ test('local-style tutorial, documents, active loading, detour, and step controls
     try {
         const {default: Demo} = await vite.ssrLoadModule('/src/GuidedDemo.tsx');
         await act(async()=>root.render(React.createElement(Demo,{backendUrl:'/api/public/guided'})));
+        const hostStyle = document.createElement('style');
+        hostStyle.textContent = readFileSync(new URL('../../assets/css/portfolio-refresh.css', import.meta.url), 'utf8');
+        const widgetStyle = document.createElement('style');
+        widgetStyle.textContent = readFileSync(new URL('../src/guided-demo.css', import.meta.url), 'utf8');
+        document.head.append(hostStyle, widgetStyle);
+        assert.equal(window.getComputedStyle(document.querySelector('.guided-intro h1')).fontSize, '34px');
+        assert.equal(window.getComputedStyle(document.querySelector('.guided-brand h2')).fontSize, '21px');
+        assert.equal(window.getComputedStyle(document.querySelector('.guided-chat-heading h2')).fontSize, '20px');
         assert.match(document.body.textContent,/Course materials/);
         assert.equal(document.querySelector('.guided-sidebar ol'),null);
         const modeButtons = document.querySelectorAll('[aria-label="Tutor mode"] button');
