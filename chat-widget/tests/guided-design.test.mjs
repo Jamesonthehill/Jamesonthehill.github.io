@@ -42,11 +42,13 @@ test('local-style tutorial, documents, active loading, detour, and step controls
         assert.match(document.body.textContent,/Course materials/);
         assert.equal(document.querySelector('.guided-sidebar ol'),null);
         const modeButtons = document.querySelectorAll('[aria-label="Tutor mode"] button');
-        assert.equal(modeButtons[0].textContent, 'Javis');
+        assert.equal(modeButtons[0].textContent, 'Jarvis');
+        assert.match(document.querySelector('.guided-tool-icon img').src,/jarvis\.jpg$/);
         assert.equal(modeButtons[0].getAttribute('aria-pressed'), 'true');
         assert.ok(document.querySelector('footer textarea'));
         await click(modeButtons[1]);
         assert.equal(modeButtons[1].getAttribute('aria-pressed'), 'true');
+        assert.match(document.querySelector('.guided-tool-icon img').src,/socrates\.jpg$/);
         assert.equal(calls,0);
         await click(byText('Tutorial'));
         assert.ok(document.querySelector('[role="dialog"]'));
@@ -107,13 +109,13 @@ test('local-style tutorial, documents, active loading, detour, and step controls
         const count = document.querySelectorAll('.guided-messages article').length;
         await setDraft('Keep this draft');
         await click(document.querySelector('[aria-label="Tutor mode"] button'));
-        const javis = structuredClone(ready); javis.tutor_mode='javis';javis.socratic.tutor_mode='javis';
+        const jarvis = structuredClone(ready); jarvis.tutor_mode='jarvis';jarvis.socratic.tutor_mode='jarvis';
 
-        await act(async()=>resolver(javis));
+        await act(async()=>resolver(jarvis));
         assert.equal(document.querySelector('[aria-label="Tutor mode"] button').getAttribute('aria-pressed'),'true');
         assert.equal(document.querySelectorAll('.guided-messages article').length,count);
         assert.equal(document.querySelector('textarea').value,'Keep this draft');
         assert.ok(document.querySelector('.guided-continue'));
-        assert.match(document.querySelector('.guided-chat-heading').textContent,/Javis/);
+        assert.match(document.querySelector('.guided-chat-heading').textContent,/Jarvis/);
     } finally { await act(async()=>root.unmount());await vite.close();dom.window.close(); }
 });

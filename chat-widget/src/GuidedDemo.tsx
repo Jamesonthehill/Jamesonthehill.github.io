@@ -2,7 +2,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { AtomLoader, ChatTutorial } from "./LocalChatDesign";
 import "./guided-demo.css";
 
-type TutorMode = "javis" | "socrates";
+type TutorMode = "jarvis" | "socrates";
 type Message = { role: "user" | "assistant"; content: string; lead_in?: string; next_thinking_step?: string; created_at?: string; response_seconds?: number; sources?: string[]; tutor_mode?: TutorMode };
 type Step = { title: string; goal: string };
 type State = {
@@ -18,7 +18,13 @@ const STORAGE = "braintutor_portfolio_guided_v1";
 function load(): Session | null {
     try {
         const saved = JSON.parse(sessionStorage.getItem(STORAGE) || "null");
-        return saved && Array.isArray(saved.messages) && Array.isArray(saved.steps) ? saved : null;
+        if (!saved || !Array.isArray(saved.messages) || !Array.isArray(saved.steps)) return null;
+        // Keep sessions from before the spelling correction usable.
+        if (saved.tutor_mode === "javis") saved.tutor_mode = "jarvis";
+        if (saved.socratic?.tutor_mode === "javis") saved.socratic.tutor_mode = "jarvis";
+        saved.messages = saved.messages.map((message: Omit<Message, "tutor_mode"> & {tutor_mode?: string}) => ({...message,
+            tutor_mode: message.tutor_mode === "javis" ? "jarvis" : message.tutor_mode}));
+        return saved;
     } catch { return null; }
 }
 function Text({ value }: { value: string }) {
@@ -45,7 +51,7 @@ function TutorContent({ message }: { message: Message }) {
 }
 export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
     const [session, setSession] = useState<Session | null>(load);
-    const [mode, setMode] = useState<TutorMode>(() => load()?.tutor_mode || "javis");
+    const [mode, setMode] = useState<TutorMode>(() => load()?.tutor_mode || "jarvis");
     const [draft, setDraft] = useState("");
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
@@ -202,16 +208,16 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
             </>}
         </aside>
         <section className="guided-chat" aria-label="Guided Socratic conversation">
-            <header className="guided-chat-heading"><span className="guided-tool-icon" aria-hidden="true">{mode === "javis" ? "J" : "SC"}</span><div><h2>{mode === "javis" ? "Javis" : "Socrates"}</h2><p>{mode === "javis" ? "Friendly questions grounded in your documents." : "Guided questions grounded in your documents."}</p></div><div className="guided-header-actions"><div className="guided-mode-switch" role="group" aria-label="Tutor mode"><button disabled={busy} aria-pressed={mode === "javis"} onClick={() => switchMode("javis")}>Javis</button><button disabled={busy} aria-pressed={mode === "socrates"} onClick={() => switchMode("socrates")}>Socrates</button></div><button data-guided-tour="tutorial" onClick={() => {setMaterials(false);setTutorial(true);}}>Tutorial</button><button className="guided-expand" aria-label={fullscreen ? "Exit fullscreen" : "Expand chat"} aria-pressed={fullscreen} onClick={() => setFullscreen(!fullscreen)}>{fullscreen ? "⤢" : "⛶"}</button></div></header>
+            <header className="guided-chat-heading"><span className="guided-tool-icon" aria-hidden="true"><img src={`/assets/chat-widget/avatars/${mode}.jpg`} alt="" width={43} height={43} /></span><div><h2>{mode === "jarvis" ? "Jarvis" : "Socrates"}</h2><p>{mode === "jarvis" ? "Friendly questions grounded in your documents." : "Guided questions grounded in your documents."}</p></div><div className="guided-header-actions"><div className="guided-mode-switch" role="group" aria-label="Tutor mode"><button disabled={busy} aria-pressed={mode === "jarvis"} onClick={() => switchMode("jarvis")}>Jarvis</button><button disabled={busy} aria-pressed={mode === "socrates"} onClick={() => switchMode("socrates")}>Socrates</button></div><button data-guided-tour="tutorial" onClick={() => {setMaterials(false);setTutorial(true);}}>Tutorial</button><button className="guided-expand" aria-label={fullscreen ? "Exit fullscreen" : "Expand chat"} aria-pressed={fullscreen} onClick={() => setFullscreen(!fullscreen)}>{fullscreen ? "⤢" : "⛶"}</button></div></header>
             <div className="guided-messages" ref={messagesPanel} data-guided-tour="conversation" aria-live="polite">
-                {!session && <div className="guided-intro"><span className="guided-intro-mark">{mode === "javis" ? "J" : "S"}</span><span className="guided-eyebrow">{mode === "javis" ? "YOUR DOCUMENT. A FRIENDLY CONVERSATION." : "ONE QUESTION. ONE STEP AT A TIME."}</span><h1>Think it through.<br />Make it yours.</h1><p>{mode === "javis" ? "Explore your document with Javis through friendly questions and clear explanations. Start with a scenario and share your thinking." : "Bring a document and explore it with Socrates. Start with a scenario, share your reasoning, and ask for help along the way."}</p><button disabled={busy} onClick={() => send("start")}>Try the sample activity <span aria-hidden="true">→</span></button><span className="guided-intro-note">Or upload your own course material on the left.</span></div>}
+                {!session && <div className="guided-intro"><span className="guided-intro-mark"><img src={`/assets/chat-widget/avatars/${mode}.jpg`} alt="" width={52} height={52} /></span><span className="guided-eyebrow">{mode === "jarvis" ? "YOUR DOCUMENT. A FRIENDLY CONVERSATION." : "ONE QUESTION. ONE STEP AT A TIME."}</span><h1>Think it through.<br />Make it yours.</h1><p>{mode === "jarvis" ? "Explore your document with Jarvis through friendly questions and clear explanations. Start with a scenario and share your thinking." : "Bring a document and explore it with Socrates. Start with a scenario, share your reasoning, and ask for help along the way."}</p><button disabled={busy} onClick={() => send("start")}>Try the sample activity <span aria-hidden="true">→</span></button><span className="guided-intro-note">Or upload your own course material on the left.</span></div>}
                 {session?.messages.map((message, i) => {
                     const stepMatch = message.role === "assistant" ? message.content.match(/^Step (\d+): ([^\n]+)/) : null;
                     const isLatest = i === latestAssistant;
                     return <Fragment key={i}>
                         {stepMatch && <div className="guided-step-divider" role="separator"><span>Step {stepMatch[1]} of {session.steps.length}</span><strong>{stepMatch[2]}</strong></div>}
                         <article className={`${message.role}${isLatest ? " is-current-reply" : ""}`}>
-                            <header className="guided-message-header"><div><span className="guided-avatar" aria-hidden="true">{message.role === "assistant" ? (message.tutor_mode === "javis" ? "J" : "S") : "Y"}</span><strong>{message.role === "assistant" ? (message.tutor_mode === "javis" ? "Javis" : "Socrates") : "You"}</strong></div><div className="guided-message-meta">{message.created_at && <time dateTime={message.created_at}>{new Date(message.created_at).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}</time>}{isLatest && message.response_seconds && <span>Generated in {message.response_seconds}s</span>}</div></header>
+                            <header className="guided-message-header"><div><span className="guided-avatar" aria-hidden="true">{message.role === "assistant" ? <img src={`/assets/chat-widget/avatars/${message.tutor_mode === "jarvis" ? "jarvis" : "socrates"}.jpg`} alt="" width={27} height={27} /> : "Y"}</span><strong>{message.role === "assistant" ? (message.tutor_mode === "jarvis" ? "Jarvis" : "Socrates") : "You"}</strong></div><div className="guided-message-meta">{message.created_at && <time dateTime={message.created_at}>{new Date(message.created_at).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}</time>}{isLatest && message.response_seconds && <span>Generated in {message.response_seconds}s</span>}</div></header>
                             <div className="guided-message-body">{message.role === "assistant" ? <TutorContent message={message} /> : <Text value={message.content} />}
                                 {message.sources?.length ? <details className="guided-source-details"><summary>View supporting sources</summary>{message.sources.map((source,n) => <blockquote key={n}><strong>{session.document_title}</strong><p>{source}</p></blockquote>)}<button onClick={() => setMaterials(true)}>View course material</button></details> : null}
                             </div>
@@ -223,7 +229,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
                     </Fragment>;
                 })}
                 {busy && pending && <article className="user is-pending"><header className="guided-message-header"><div><span className="guided-avatar">Y</span><strong>You</strong></div><span className="guided-message-meta">Sending…</span></header><div className="guided-message-body"><Text value={pending} /></div></article>}
-                {busy && !uploading && <AtomLoader title={mode === "javis" ? "Javis" : "Socrates"} message={"I’m preparing your reply using the course materials and our conversation."} />}
+                {busy && !uploading && <AtomLoader title={mode === "jarvis" ? "Jarvis" : "Socrates"} message={"I’m preparing your reply using the course materials and our conversation."} />}
                 {finished && <div className="guided-complete" role="status"><span aria-hidden="true">✦</span><div><strong>Practice complete</strong><p>Your summary and final feedback are ready to review.</p></div></div>}
                 {error && <p className="guided-error" role="alert">{error}</p>}
                 <div ref={end} />
@@ -237,7 +243,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
             </footer>}
             {finished && <footer><button onClick={() => send("start")} disabled={busy}>Try again</button></footer>}
         </section>
-        {uploading && <div className="guided-upload-overlay"><AtomLoader title={mode === "javis" ? "Javis" : "Socrates"} message="Generating setup from your selected document. Please keep this page open." /></div>}
+        {uploading && <div className="guided-upload-overlay"><AtomLoader title={mode === "jarvis" ? "Jarvis" : "Socrates"} message="Generating setup from your selected document. Please keep this page open." /></div>}
         {tutorial && <ChatTutorial onClose={() => setTutorial(false)} />}
         {popup && <div className="guided-modal-backdrop" onClick={() => setPopup("")}>
             <section className="guided-upload-modal" role="alertdialog" aria-modal="true" aria-labelledby="upload-modal-title" onClick={event => event.stopPropagation()} onKeyDown={event => {if (event.key === "Escape") setPopup("");}}>
