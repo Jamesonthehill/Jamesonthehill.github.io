@@ -2,3 +2,23 @@
 .guided-demo *{box-sizing:border-box}.guided-demo button{border:0;border-radius:12px;background:var(--purple);color:#fff;padding:11px 16px;font:inherit;font-weight:650;cursor:pointer}.guided-demo button:disabled{opacity:.5;cursor:wait}.guided-sidebar{padding:24px;overflow:auto;border-right:1px solid var(--border)}.guided-brand{display:flex;gap:12px;align-items:center;margin-bottom:22px}.guided-brand>span{background:var(--purple);color:white;padding:12px;border-radius:14px;font-weight:800}.guided-brand h2{font-size:21px;margin:0}.guided-brand p{margin:0;color:#77768b;font-size:13px}.guided-demo .guided-outline{background:transparent;color:var(--ink);border:1px solid var(--border);width:100%}.guided-sidebar h3{font-size:14px;margin:26px 0 14px}.guided-sidebar ol{list-style:none;padding:0}.guided-sidebar li{display:flex;gap:10px;padding:14px 10px;border-radius:12px;margin-bottom:8px}.guided-sidebar li[aria-current]{background:#ede9ff;border:1px solid #c5bbff}.guided-sidebar li>span{color:var(--purple);font-weight:800}.guided-sidebar li.done>span{color:#188255}.guided-sidebar li p{margin:4px 0 0;font-size:13px}.guided-sidebar progress{width:100%;accent-color:var(--purple);margin:5px 0 20px}.guided-material{white-space:pre-wrap;margin-top:14px;font-size:13px;padding:14px;background:var(--paper);border-radius:12px}.guided-chat{display:flex;flex-direction:column;min-width:0;min-height:0}.guided-chat>header{display:flex;justify-content:space-between;align-items:center;padding:22px 26px;background:var(--paper);border-bottom:1px solid var(--border);gap:14px}.guided-chat h2{font-size:19px;margin:0}.guided-chat>header span{font-size:12px;color:#6f6989}.guided-messages{flex:1;overflow:auto;padding:26px;min-height:0}.guided-messages article{max-width:92%;margin-bottom:22px}.guided-messages article>span{font-size:12px;color:#77768b}.guided-messages article>div{white-space:pre-wrap;padding:18px 20px;border:1px solid var(--border);background:var(--paper);border-radius:16px}.guided-messages article.user{margin-left:auto}.guided-messages article.user>div{background:#ede9ff}.guided-chat footer{border-top:1px solid var(--border);padding:18px 24px;background:var(--paper)}.guided-chat footer>button{margin-bottom:12px}.guided-chat form{display:flex;gap:10px;flex-wrap:wrap}.guided-chat form label{width:100%;font-size:13px;font-weight:650}.guided-chat textarea{flex:1;min-width:130px;border:1px solid var(--border);border-radius:12px;padding:12px;font:inherit;resize:vertical;max-height:180px;background:var(--paper);color:var(--ink)}.guided-intro{max-width:540px;margin:50px auto}.guided-intro h1{font-size:34px;line-height:1.2}.guided-working{color:#665a9e;display:flex;gap:10px;align-items:center}.guided-working span{width:10px;height:10px;border-radius:50%;background:var(--purple);animation:guided-pulse 1.4s ease-in-out infinite}.guided-error{padding:14px;border-radius:10px;background:#fff0f0;color:#a22c38}@keyframes guided-pulse{50%{opacity:.3}}@media(max-width:760px){.guided-demo{grid-template-columns:1fr;height:auto;min-height:80dvh;border-radius:12px}.guided-sidebar{border-right:0;border-bottom:1px solid var(--border);max-height:340px}.guided-chat{height:75dvh}.guided-messages{padding:16px}}@media(prefers-reduced-motion:reduce){.guided-working span{animation:none}}
 html[data-theme="dark"] .guided-demo{--paper:#222338;--ink:#f0eff8;--border:#41415e;background:#191a2d}
 html[data-theme="dark"] .guided-sidebar li[aria-current],html[data-theme="dark"] .guided-messages article.user>div{background:#363052}
+
+.guided-thinking-step {
+  margin: 18px 0 0;
+  padding: 16px 18px;
+  background: #e8f5f3;
+  border-left: 4px solid #14968d;
+  border-radius: 12px;
+  color: var(--ink);
+}
+.guided-thinking-step h3 {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: #0c7972;
+}
+.guided-thinking-step > div { white-space: pre-wrap; }
+html[data-theme="dark"] .guided-thinking-step { background: #203d3f; }
+html[data-theme="dark"] .guided-thinking-step h3 { color: #83ddd4; }

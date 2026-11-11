@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./guided-demo.css";
 
-type Message = { role: "user" | "assistant"; content: string };
+type Message = { role: "user" | "assistant"; content: string; lead_in?: string; next_thinking_step?: string };
 type Step = { title: string; goal: string };
 type State = {
     learning_step_index?: number;
@@ -21,6 +21,23 @@ function load(): Session | null {
 function Text({ value }: { value: string }) {
     return <>{value.split(/(\*\*[^*]+\*\*)/g).map((part, index) =>
         part.startsWith("**") ? <strong key={index}>{part.slice(2, -2)}</strong> : part)}</>;
+}
+function TutorContent({ message }: { message: Message }) {
+    let lead = message.lead_in;
+    let question = message.next_thinking_step;
+    if (lead === undefined || question === undefined) {
+        const parts = message.content.trim().split(/\n\n+/);
+        const last = parts[parts.length - 1] || "";
+        question = last.replace(/\*/g, "").trim().endsWith("?") ? last : "";
+        lead = question ? parts.slice(0, -1).join("\n\n") : message.content;
+    }
+    return <>
+        {lead && <div className="guided-tutor-explanation"><Text value={lead} /></div>}
+        {question && <section className="guided-thinking-step" aria-label="Your next thinking step">
+            <h3>Your next thinking step</h3>
+            <div><Text value={question} /></div>
+        </section>}
+    </>;
 }
 export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
     const [session, setSession] = useState<Session | null>(load);
@@ -89,7 +106,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
                 {!session && <div className="guided-intro"><h1>Learn through a code review</h1><p>Work through three short steps with a Socratic tutor. Ask about unfamiliar terms at any time, then return to the question you paused.</p><p>This sample activity uses a code review practice guide. Your demo conversation stays in this browser tab.</p><button disabled={busy} onClick={() => send("start")}>Start guided demo</button></div>}
                 {session?.messages.map((message, i) => <article key={i} className={message.role}>
                     <span>{message.role === "assistant" ? "Socratic tutor" : "You"}</span>
-                    <div><Text value={message.content} /></div>
+                    <div>{message.role === "assistant" ? <TutorContent message={message} /> : <Text value={message.content} />}</div>
                 </article>)}
                 {busy && <p className="guided-working" role="status"><span />{session ? "Preparing your reply…" : "Opening the guided activity…"}</p>}
                 {error && <p className="guided-error" role="alert">{error}</p>}
