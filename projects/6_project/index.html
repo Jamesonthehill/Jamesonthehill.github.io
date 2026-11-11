@@ -158,7 +158,7 @@
         const root = document.getElementById("chat-root");
         if (window.ChatWidget && typeof window.ChatWidget.mount === "function") {
             window.ChatWidget.mount("#chat-root", {
-                backendUrl: "https://socratic-chat-api.onrender.com/api/public/guided"
+                backendUrl: "https://chatbot-backend-zto2.onrender.com/api/public/guided"
             });
         } else {
             root.textContent = "The Socratic questioning tool could not load. Please refresh and try again.";
