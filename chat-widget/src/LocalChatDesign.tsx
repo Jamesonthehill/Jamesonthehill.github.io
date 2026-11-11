@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
-export function AtomLoader({ message }: { message: string }) {
+export function AtomLoader({ message, title = "Socratic tutor" }: { message: string; title?: string }) {
     const [seconds, setSeconds] = useState(0);
     useEffect(() => {
         const start = Date.now();
@@ -15,7 +15,7 @@ export function AtomLoader({ message }: { message: string }) {
                 <g transform="rotate(120 22 22)"><g className="guided-orbit orbit-three"><ellipse cx="22" cy="22" rx="19" ry="8" /><circle cx="41" cy="22" r="2.6" /></g></g>
                 <circle cx="22" cy="22" r="8" fill="#6350d933" /><circle cx="22" cy="22" r="5.4" fill="#202841" /><circle cx="20" cy="20" r="1.8" fill="white" />
             </svg></span>
-            <div><strong>Socratic tutor</strong><p>{message}</p><span className="guided-elapsed">{seconds}s elapsed</span></div>
+            <div><strong>{title}</strong><p>{message}</p><span className="guided-elapsed">{seconds}s elapsed</span></div>
         </div>
         <div className="guided-processing-track" aria-hidden="true"><span /></div>
     </div>;
@@ -24,9 +24,9 @@ export function AtomLoader({ message }: { message: string }) {
 const TOUR = [
     { target: "materials", title: "Choose your course material", detail: "Upload a PDF, Word, PowerPoint, or LaTeX document. You can also start with the sample guide.", preview: "Your document → a short guided activity" },
     { target: "document", title: "Read before you begin", detail: "Use View to read the material beside the chat, or Download to keep a copy. You can return to it at any time.", preview: "View document · Zoom in · Download" },
-    { target: "conversation", title: "Start with the scenario", detail: "Read the situation, then answer the question in Your next thinking step. Explain your reasoning in your own words.", preview: "A teammate finds a problem in your code. What would you check first, and why?" },
+    { target: "conversation", title: "Choose how to chat", detail: "Javis starts by default and gives friendly, direct explanations. Switch to Socrates for a scenario and guided questions. Your document and conversation stay with you.", preview: "A teammate finds a problem in your code. What would you check first, and why?" },
     { target: "composer", title: "Ask for help whenever you need it", detail: "Ask about an unfamiliar term or explain what is confusing. During a subtopic discussion, Back to the original question restores the question you paused.", preview: "You: What does an edge case mean?" },
-    { target: "actions", title: "Continue, summarize, and finish", detail: "When the tutor finds enough understanding, Continue to next step appears below its reply. After the final step, summarize your learning and get final feedback.", preview: "Discuss → Continue → Summarize → Final feedback" },
+    { target: "actions", title: "Follow a guided path with Socrates", detail: "In Socrates mode, Continue to next step appears below the reply when the step is ready. After the final step, summarize and review feedback. Javis stays open for direct conversation.", preview: "Discuss → Continue → Summarize → Final feedback" },
 ];
 export function ChatTutorial({ onClose }: { onClose: () => void }) {
     const [step, setStep] = useState(0);

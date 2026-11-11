@@ -2,15 +2,17 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { AtomLoader, ChatTutorial } from "./LocalChatDesign";
 import "./guided-demo.css";
 
-type Message = { role: "user" | "assistant"; content: string; lead_in?: string; next_thinking_step?: string; created_at?: string; response_seconds?: number; sources?: string[] };
+type TutorMode = "javis" | "socrates";
+type Message = { role: "user" | "assistant"; content: string; lead_in?: string; next_thinking_step?: string; created_at?: string; response_seconds?: number; sources?: string[]; tutor_mode?: TutorMode };
 type Step = { title: string; goal: string };
 type State = {
+    tutor_mode?: TutorMode;
     learning_step_index?: number;
     phase?: string;
     step_readiness?: { ready?: boolean };
     learning_detour?: { question?: string };
 };
-type Session = { messages: Message[]; socratic: State; steps: Step[]; material: string; conversation_id: string; document_token?: string; document_title?: string };
+type Session = { messages: Message[]; socratic: State; steps: Step[]; material: string; conversation_id: string; document_token?: string; document_title?: string; tutor_mode?: TutorMode };
 const STORAGE = "braintutor_portfolio_guided_v1";
 
 function load(): Session | null {
@@ -43,6 +45,7 @@ function TutorContent({ message }: { message: Message }) {
 }
 export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
     const [session, setSession] = useState<Session | null>(load);
+    const [mode, setMode] = useState<TutorMode>(() => load()?.tutor_mode || "javis");
     const [draft, setDraft] = useState("");
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
@@ -91,7 +94,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
     const finished = session?.socratic.phase === "completed";
     const ready = session?.socratic.step_readiness?.ready && !session?.socratic.learning_detour;
     const last = index === (session?.steps.length || 0) - 1;
-    async function send(action: string) {
+    async function send(action: string, nextMode: TutorMode = mode) {
         if (busy) return;
         setBusy(true);
         setPending(["message", "finish"].includes(action) ? draft : "");
@@ -101,22 +104,31 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
         controller.current = abort;
         const timeout = window.setTimeout(() => abort.abort(), 180000);
         try {
+            let active = session;
+            if (!active && action === "message") {
+                const opening = await fetch(backendUrl, { method: "POST", headers: {"Content-Type":"application/json"}, signal: abort.signal,
+                    body: JSON.stringify({action:"start", tutor_mode:nextMode}) });
+                const initial = await opening.json();
+                if (!opening.ok) throw new Error(initial.detail || "Could not start the conversation.");
+                active = initial;
+            }
             const response = await fetch(backendUrl, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 signal: abort.signal,
                 body: JSON.stringify({
-                    action, message: draft, history: session?.messages || [],
-                    engine_state: session?.socratic || {},
-                    document_token: session?.document_token,
-                    conversation_id: session?.conversation_id || crypto.randomUUID(),
+                    action, tutor_mode: nextMode, message: draft, history: active?.messages || [],
+                    engine_state: active?.socratic || {},
+                    document_token: active?.document_token,
+                    conversation_id: active?.conversation_id || crypto.randomUUID(),
                 }),
             });
             const result = await response.json();
             if (!response.ok) throw new Error(typeof result.detail === "string" ? result.detail : "The demo could not complete this request. Please retry.");
             if (!Array.isArray(result.messages) || !Array.isArray(result.steps)) throw new Error("The demo returned an unexpected response.");
             setSession(stamp(result, ["message", "finish"].includes(action) ? Math.max(1, Math.round((Date.now() - startedAt) / 1000)) : undefined));
-            if (action === "start" || action === "continue" || action === "finish") setSummarizing(false);
-            setDraft("");
+            setMode(nextMode);
+            if (["start", "continue", "finish", "set_mode"].includes(action)) setSummarizing(false);
+            if (action !== "set_mode") setDraft("");
         } catch (cause) {
             setError(cause instanceof Error && cause.name === "AbortError"
                 ? "The server is taking longer than expected. Please retry in a moment."
@@ -143,7 +155,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
             if (!response.ok) throw new Error(data.detail || "Could not read this document.");
             const started = await fetch(backendUrl, { method: "POST", signal: abort.signal,
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "start", document_token: data.document_token }) });
+                body: JSON.stringify({ action: "start", tutor_mode: mode, document_token: data.document_token }) });
             const result = await started.json();
             if (!started.ok) throw new Error(result.detail || "Could not open the activity.");
             if (originalRef.current) URL.revokeObjectURL(originalRef.current);
@@ -151,6 +163,11 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
             setSession(stamp(result)); setDraft(""); setMaterials(false); setSummarizing(false); setZoom(100);
         } catch (cause) { setPopup(cause instanceof Error ? cause.message : "Could not upload this file."); }
         finally { window.clearTimeout(timeout); setBusy(false); setUploading(false); }
+    }
+    function switchMode(nextMode: TutorMode) {
+        if (busy || nextMode === mode) return;
+        if (!session) {setMode(nextMode); return;}
+        void send("set_mode", nextMode);
     }
     const latestAssistant = session?.messages.reduce((latest, message, i) => message.role === "assistant" ? i : latest, -1) ?? -1;
     return <div className={`guided-demo${fullscreen ? " is-fullscreen" : ""}`}>
@@ -185,42 +202,42 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
             </>}
         </aside>
         <section className="guided-chat" aria-label="Guided Socratic conversation">
-            <header className="guided-chat-heading"><span className="guided-tool-icon" aria-hidden="true">SC</span><div><h2>Socratic Chat</h2><p>Questions grounded in your course materials.</p></div><div className="guided-header-actions"><button data-guided-tour="tutorial" onClick={() => {setMaterials(false);setTutorial(true);}}>Tutorial</button><button className="guided-expand" aria-label={fullscreen ? "Exit fullscreen" : "Expand chat"} aria-pressed={fullscreen} onClick={() => setFullscreen(!fullscreen)}>{fullscreen ? "⤢" : "⛶"}</button></div></header>
+            <header className="guided-chat-heading"><span className="guided-tool-icon" aria-hidden="true">{mode === "javis" ? "J" : "SC"}</span><div><h2>{mode === "javis" ? "Javis" : "Socrates"}</h2><p>{mode === "javis" ? "Friendly answers grounded in your documents." : "Guided questions grounded in your documents."}</p></div><div className="guided-header-actions"><div className="guided-mode-switch" role="group" aria-label="Tutor mode"><button disabled={busy} aria-pressed={mode === "javis"} onClick={() => switchMode("javis")}>Javis</button><button disabled={busy} aria-pressed={mode === "socrates"} onClick={() => switchMode("socrates")}>Socrates</button></div><button data-guided-tour="tutorial" onClick={() => {setMaterials(false);setTutorial(true);}}>Tutorial</button><button className="guided-expand" aria-label={fullscreen ? "Exit fullscreen" : "Expand chat"} aria-pressed={fullscreen} onClick={() => setFullscreen(!fullscreen)}>{fullscreen ? "⤢" : "⛶"}</button></div></header>
             <div className="guided-messages" ref={messagesPanel} data-guided-tour="conversation" aria-live="polite">
-                {!session && <div className="guided-intro"><span className="guided-intro-mark">S</span><span className="guided-eyebrow">ONE QUESTION. ONE STEP AT A TIME.</span><h1>Think it through.<br />Make it yours.</h1><p>Bring a document and explore it with your Socratic tutor. Start with a scenario, share your reasoning, and ask for help along the way.</p><button disabled={busy} onClick={() => send("start")}>Try the sample activity <span aria-hidden="true">→</span></button><span className="guided-intro-note">Or upload your own course material on the left.</span></div>}
+                {!session && <div className="guided-intro"><span className="guided-intro-mark">{mode === "javis" ? "J" : "S"}</span><span className="guided-eyebrow">{mode === "javis" ? "YOUR DOCUMENT. A FRIENDLY CONVERSATION." : "ONE QUESTION. ONE STEP AT A TIME."}</span><h1>Think it through.<br />Make it yours.</h1><p>{mode === "javis" ? "Ask Javis a question and get a clear, friendly explanation. Upload your document, or try the included code review guide." : "Bring a document and explore it with Socrates. Start with a scenario, share your reasoning, and ask for help along the way."}</p><button disabled={busy} onClick={() => send("start")}>Try the sample activity <span aria-hidden="true">→</span></button><span className="guided-intro-note">Or upload your own course material on the left.</span></div>}
                 {session?.messages.map((message, i) => {
                     const stepMatch = message.role === "assistant" ? message.content.match(/^Step (\d+): ([^\n]+)/) : null;
                     const isLatest = i === latestAssistant;
                     return <Fragment key={i}>
                         {stepMatch && <div className="guided-step-divider" role="separator"><span>Step {stepMatch[1]} of {session.steps.length}</span><strong>{stepMatch[2]}</strong></div>}
                         <article className={`${message.role}${isLatest ? " is-current-reply" : ""}`}>
-                            <header className="guided-message-header"><div><span className="guided-avatar" aria-hidden="true">{message.role === "assistant" ? "S" : "Y"}</span><strong>{message.role === "assistant" ? "Socratic tutor" : "You"}</strong></div><div className="guided-message-meta">{message.created_at && <time dateTime={message.created_at}>{new Date(message.created_at).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}</time>}{isLatest && message.response_seconds && <span>Generated in {message.response_seconds}s</span>}</div></header>
+                            <header className="guided-message-header"><div><span className="guided-avatar" aria-hidden="true">{message.role === "assistant" ? (message.tutor_mode === "javis" ? "J" : "S") : "Y"}</span><strong>{message.role === "assistant" ? (message.tutor_mode === "javis" ? "Javis" : "Socrates") : "You"}</strong></div><div className="guided-message-meta">{message.created_at && <time dateTime={message.created_at}>{new Date(message.created_at).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}</time>}{isLatest && message.response_seconds && <span>Generated in {message.response_seconds}s</span>}</div></header>
                             <div className="guided-message-body">{message.role === "assistant" ? <TutorContent message={message} /> : <Text value={message.content} />}
                                 {message.sources?.length ? <details className="guided-source-details"><summary>View supporting sources</summary>{message.sources.map((source,n) => <blockquote key={n}><strong>{session.document_title}</strong><p>{source}</p></blockquote>)}<button onClick={() => setMaterials(true)}>View course material</button></details> : null}
                             </div>
                         </article>
-                        {isLatest && !finished && !summarizing && <div className="guided-inline-actions" data-guided-tour="actions">
+                        {isLatest && mode === "socrates" && !finished && !summarizing && <div className="guided-inline-actions" data-guided-tour="actions">
                             {session.socratic.learning_detour && <button disabled={busy} onClick={() => send("resume")}>Back to the original question</button>}
                             {ready && <button className="guided-continue" disabled={busy} onClick={() => { if (last) {setSummarizing(true);window.setTimeout(() => reply.current?.focus(),0);} else void send("continue"); }}>{last ? "Finish conversation and summarize" : "Continue to next step"} <span aria-hidden="true">→</span></button>}
                         </div>}
                     </Fragment>;
                 })}
                 {busy && pending && <article className="user is-pending"><header className="guided-message-header"><div><span className="guided-avatar">Y</span><strong>You</strong></div><span className="guided-message-meta">Sending…</span></header><div className="guided-message-body"><Text value={pending} /></div></article>}
-                {busy && !uploading && <AtomLoader message={session ? "I’m preparing your reply using the course materials and our conversation." : "I’m opening your first scenario and question."} />}
+                {busy && !uploading && <AtomLoader title={mode === "javis" ? "Javis" : "Socrates"} message={"I’m preparing your reply using the course materials and our conversation."} />}
                 {finished && <div className="guided-complete" role="status"><span aria-hidden="true">✦</span><div><strong>Practice complete</strong><p>Your summary and final feedback are ready to review.</p></div></div>}
                 {error && <p className="guided-error" role="alert">{error}</p>}
                 <div ref={end} />
             </div>
-            {session && !finished && <footer data-guided-tour="composer" className={summarizing ? "is-summarizing" : ""}>
+            {!finished && <footer data-guided-tour="composer" className={summarizing ? "is-summarizing" : ""}>
                 <form onSubmit={event => { event.preventDefault(); void send(summarizing ? "finish" : "message"); }}>
-                    <label htmlFor="guided-reply">{summarizing ? "Summarize what you learned" : "Share your thinking"}</label>
-                    <textarea ref={reply} id="guided-reply" rows={2} maxLength={4000} placeholder={summarizing ? "In my own words, I learned…" : "Write your answer or ask a question…"} value={draft} onChange={e => setDraft(e.target.value)} disabled={busy} onKeyDown={event => {if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {event.preventDefault(); if (draft.trim() && !busy) event.currentTarget.form?.requestSubmit();}}} />
+                    <label htmlFor="guided-reply">{summarizing ? "Summarize what you learned" : mode === "javis" ? "Ask Javis" : "Share your thinking"}</label>
+                    <textarea ref={reply} id="guided-reply" rows={2} maxLength={4000} placeholder={summarizing ? "In my own words, I learned…" : mode === "javis" ? "What would you like to understand?" : "Write your answer or ask a question…"} value={draft} onChange={e => setDraft(e.target.value)} disabled={busy} onKeyDown={event => {if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {event.preventDefault(); if (draft.trim() && !busy) event.currentTarget.form?.requestSubmit();}}} />
                     <div className="guided-composer-bottom"><span>Enter to send · Shift + Enter for a new line</span><button disabled={busy || !draft.trim()}>{summarizing ? "Get final feedback" : "Send message"}</button></div>
                 </form>
             </footer>}
             {finished && <footer><button onClick={() => send("start")} disabled={busy}>Try again</button></footer>}
         </section>
-        {uploading && <div className="guided-upload-overlay"><AtomLoader message="Generating setup from your selected document. Please keep this page open." /></div>}
+        {uploading && <div className="guided-upload-overlay"><AtomLoader title={mode === "javis" ? "Javis" : "Socrates"} message="Generating setup from your selected document. Please keep this page open." /></div>}
         {tutorial && <ChatTutorial onClose={() => setTutorial(false)} />}
         {popup && <div className="guided-modal-backdrop" onClick={() => setPopup("")}>
             <section className="guided-upload-modal" role="alertdialog" aria-modal="true" aria-labelledby="upload-modal-title" onClick={event => event.stopPropagation()} onKeyDown={event => {if (event.key === "Escape") setPopup("");}}>

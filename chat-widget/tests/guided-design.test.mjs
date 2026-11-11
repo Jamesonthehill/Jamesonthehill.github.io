@@ -22,7 +22,7 @@ test('local-style tutorial, documents, active loading, detour, and step controls
     globalThis.fetch = async (_url, request) => {
         calls++;
         const body=JSON.parse(request.body);
-        if(body.action==='start') return {ok:true,json:async()=>structuredClone(session)};
+        if(body.action==='start') {const initial=structuredClone(session);initial.tutor_mode=body.tutor_mode;initial.socratic.tutor_mode=body.tutor_mode;return {ok:true,json:async()=>initial};}
         return new Promise(resolve=>{resolver=(result)=>resolve({ok:true,json:async()=>result});});
     };
     const click = async (button) => { assert.ok(button); await act(async()=>{button.click();}); };
@@ -32,6 +32,13 @@ test('local-style tutorial, documents, active loading, detour, and step controls
         await act(async()=>root.render(React.createElement(Demo,{backendUrl:'/api/public/guided'})));
         assert.match(document.body.textContent,/Course materials/);
         assert.equal(document.querySelector('.guided-sidebar ol'),null);
+        const modeButtons = document.querySelectorAll('[aria-label="Tutor mode"] button');
+        assert.equal(modeButtons[0].textContent, 'Javis');
+        assert.equal(modeButtons[0].getAttribute('aria-pressed'), 'true');
+        assert.ok(document.querySelector('footer textarea'));
+        await click(modeButtons[1]);
+        assert.equal(modeButtons[1].getAttribute('aria-pressed'), 'true');
+        assert.equal(calls,0);
         await click(byText('Tutorial'));
         assert.ok(document.querySelector('[role="dialog"]'));
         assert.equal(document.querySelectorAll('.guided-tour-shade').length,4);
@@ -88,5 +95,16 @@ test('local-style tutorial, documents, active loading, detour, and step controls
         assert.ok(document.querySelector('.guided-inline-actions .guided-continue'));
         assert.ok(document.querySelector('footer textarea'));
         assert.equal(document.querySelector('.guided-chat > footer .guided-continue'),null);
+        const count = document.querySelectorAll('.guided-messages article').length;
+        await setDraft('Keep this draft');
+        await click(document.querySelector('[aria-label="Tutor mode"] button'));
+        const javis = structuredClone(ready); javis.tutor_mode='javis';javis.socratic.tutor_mode='javis';
+        javis.messages.push({role:'assistant',tutor_mode:'javis',content:'Javis here.',lead_in:'Javis here.',next_thinking_step:''});
+        await act(async()=>resolver(javis));
+        assert.equal(document.querySelector('[aria-label="Tutor mode"] button').getAttribute('aria-pressed'),'true');
+        assert.equal(document.querySelectorAll('.guided-messages article').length,count+1);
+        assert.equal(document.querySelector('textarea').value,'Keep this draft');
+        assert.equal(document.querySelector('.guided-continue'),null);
+        assert.match(document.querySelector('.guided-chat-heading').textContent,/Javis/);
     } finally { await act(async()=>root.unmount());await vite.close();dom.window.close(); }
 });

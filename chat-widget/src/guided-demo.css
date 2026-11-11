@@ -15,3 +15,5 @@ html[data-theme="dark"] .guided-demo{--paper:#1c2235;--ink:#f0f1fb;--border:#3b4
 @media(prefers-reduced-motion:reduce){.guided-demo *,.guided-demo *:before{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
 
 @media(max-width:720px){.guided-demo.is-fullscreen .guided-sidebar.is-viewing-document{display:flex;max-height:45dvh;min-height:260px}.guided-demo.is-fullscreen:has(.is-viewing-document) .guided-chat{height:55dvh}}
+
+.guided-mode-switch{display:flex;gap:3px;padding:3px;border:1px solid var(--border);border-radius:11px;background:var(--paper)}.guided-mode-switch button{padding:6px 9px;font-size:11px;background:transparent;color:var(--muted);border-radius:7px;box-shadow:none}.guided-mode-switch button[aria-pressed="true"]{background:var(--purple);color:#fff;box-shadow:0 3px 8px #5042ec25}.guided-chat-heading{flex-wrap:wrap}.guided-header-actions{flex-wrap:wrap;justify-content:flex-end}@media(max-width:1100px){.guided-header-actions{width:100%;justify-content:flex-end}.guided-mode-switch{margin-right:auto}.guided-chat-heading{gap:8px;min-height:112px}}
