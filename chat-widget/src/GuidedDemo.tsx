@@ -80,7 +80,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
         const now = new Date().toISOString();
         result.messages = result.messages.map((message, i) => ({ ...message,
             created_at: message.created_at || session?.messages[i]?.created_at || now,
-            response_seconds: i === result.messages.length - 1 ? elapsed : session?.messages[i]?.response_seconds,
+            response_seconds: i === result.messages.length - 1 && elapsed !== undefined ? elapsed : session?.messages[i]?.response_seconds,
         }));
         return result;
     }
@@ -127,7 +127,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
             if (!Array.isArray(result.messages) || !Array.isArray(result.steps)) throw new Error("The demo returned an unexpected response.");
             setSession(stamp(result, ["message", "finish"].includes(action) ? Math.max(1, Math.round((Date.now() - startedAt) / 1000)) : undefined));
             setMode(nextMode);
-            if (["start", "continue", "finish", "set_mode"].includes(action)) setSummarizing(false);
+            if (["start", "continue", "finish"].includes(action)) setSummarizing(false);
             if (action !== "set_mode") setDraft("");
         } catch (cause) {
             setError(cause instanceof Error && cause.name === "AbortError"
@@ -202,9 +202,9 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
             </>}
         </aside>
         <section className="guided-chat" aria-label="Guided Socratic conversation">
-            <header className="guided-chat-heading"><span className="guided-tool-icon" aria-hidden="true">{mode === "javis" ? "J" : "SC"}</span><div><h2>{mode === "javis" ? "Javis" : "Socrates"}</h2><p>{mode === "javis" ? "Friendly answers grounded in your documents." : "Guided questions grounded in your documents."}</p></div><div className="guided-header-actions"><div className="guided-mode-switch" role="group" aria-label="Tutor mode"><button disabled={busy} aria-pressed={mode === "javis"} onClick={() => switchMode("javis")}>Javis</button><button disabled={busy} aria-pressed={mode === "socrates"} onClick={() => switchMode("socrates")}>Socrates</button></div><button data-guided-tour="tutorial" onClick={() => {setMaterials(false);setTutorial(true);}}>Tutorial</button><button className="guided-expand" aria-label={fullscreen ? "Exit fullscreen" : "Expand chat"} aria-pressed={fullscreen} onClick={() => setFullscreen(!fullscreen)}>{fullscreen ? "⤢" : "⛶"}</button></div></header>
+            <header className="guided-chat-heading"><span className="guided-tool-icon" aria-hidden="true">{mode === "javis" ? "J" : "SC"}</span><div><h2>{mode === "javis" ? "Javis" : "Socrates"}</h2><p>{mode === "javis" ? "Friendly questions grounded in your documents." : "Guided questions grounded in your documents."}</p></div><div className="guided-header-actions"><div className="guided-mode-switch" role="group" aria-label="Tutor mode"><button disabled={busy} aria-pressed={mode === "javis"} onClick={() => switchMode("javis")}>Javis</button><button disabled={busy} aria-pressed={mode === "socrates"} onClick={() => switchMode("socrates")}>Socrates</button></div><button data-guided-tour="tutorial" onClick={() => {setMaterials(false);setTutorial(true);}}>Tutorial</button><button className="guided-expand" aria-label={fullscreen ? "Exit fullscreen" : "Expand chat"} aria-pressed={fullscreen} onClick={() => setFullscreen(!fullscreen)}>{fullscreen ? "⤢" : "⛶"}</button></div></header>
             <div className="guided-messages" ref={messagesPanel} data-guided-tour="conversation" aria-live="polite">
-                {!session && <div className="guided-intro"><span className="guided-intro-mark">{mode === "javis" ? "J" : "S"}</span><span className="guided-eyebrow">{mode === "javis" ? "YOUR DOCUMENT. A FRIENDLY CONVERSATION." : "ONE QUESTION. ONE STEP AT A TIME."}</span><h1>Think it through.<br />Make it yours.</h1><p>{mode === "javis" ? "Ask Javis a question and get a clear, friendly explanation. Upload your document, or try the included code review guide." : "Bring a document and explore it with Socrates. Start with a scenario, share your reasoning, and ask for help along the way."}</p><button disabled={busy} onClick={() => send("start")}>Try the sample activity <span aria-hidden="true">→</span></button><span className="guided-intro-note">Or upload your own course material on the left.</span></div>}
+                {!session && <div className="guided-intro"><span className="guided-intro-mark">{mode === "javis" ? "J" : "S"}</span><span className="guided-eyebrow">{mode === "javis" ? "YOUR DOCUMENT. A FRIENDLY CONVERSATION." : "ONE QUESTION. ONE STEP AT A TIME."}</span><h1>Think it through.<br />Make it yours.</h1><p>{mode === "javis" ? "Explore your document with Javis through friendly questions and clear explanations. Start with a scenario and share your thinking." : "Bring a document and explore it with Socrates. Start with a scenario, share your reasoning, and ask for help along the way."}</p><button disabled={busy} onClick={() => send("start")}>Try the sample activity <span aria-hidden="true">→</span></button><span className="guided-intro-note">Or upload your own course material on the left.</span></div>}
                 {session?.messages.map((message, i) => {
                     const stepMatch = message.role === "assistant" ? message.content.match(/^Step (\d+): ([^\n]+)/) : null;
                     const isLatest = i === latestAssistant;
@@ -216,7 +216,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
                                 {message.sources?.length ? <details className="guided-source-details"><summary>View supporting sources</summary>{message.sources.map((source,n) => <blockquote key={n}><strong>{session.document_title}</strong><p>{source}</p></blockquote>)}<button onClick={() => setMaterials(true)}>View course material</button></details> : null}
                             </div>
                         </article>
-                        {isLatest && mode === "socrates" && !finished && !summarizing && <div className="guided-inline-actions" data-guided-tour="actions">
+                        {isLatest && !finished && !summarizing && <div className="guided-inline-actions" data-guided-tour="actions">
                             {session.socratic.learning_detour && <button disabled={busy} onClick={() => send("resume")}>Back to the original question</button>}
                             {ready && <button className="guided-continue" disabled={busy} onClick={() => { if (last) {setSummarizing(true);window.setTimeout(() => reply.current?.focus(),0);} else void send("continue"); }}>{last ? "Finish conversation and summarize" : "Continue to next step"} <span aria-hidden="true">→</span></button>}
                         </div>}
@@ -230,8 +230,8 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
             </div>
             {!finished && <footer data-guided-tour="composer" className={summarizing ? "is-summarizing" : ""}>
                 <form onSubmit={event => { event.preventDefault(); void send(summarizing ? "finish" : "message"); }}>
-                    <label htmlFor="guided-reply">{summarizing ? "Summarize what you learned" : mode === "javis" ? "Ask Javis" : "Share your thinking"}</label>
-                    <textarea ref={reply} id="guided-reply" rows={2} maxLength={4000} placeholder={summarizing ? "In my own words, I learned…" : mode === "javis" ? "What would you like to understand?" : "Write your answer or ask a question…"} value={draft} onChange={e => setDraft(e.target.value)} disabled={busy} onKeyDown={event => {if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {event.preventDefault(); if (draft.trim() && !busy) event.currentTarget.form?.requestSubmit();}}} />
+                    <label htmlFor="guided-reply">{summarizing ? "Summarize what you learned" : "Share your thinking"}</label>
+                    <textarea ref={reply} id="guided-reply" rows={2} maxLength={4000} placeholder={summarizing ? "In my own words, I learned…" : "Write your answer or ask a question…"} value={draft} onChange={e => setDraft(e.target.value)} disabled={busy} onKeyDown={event => {if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {event.preventDefault(); if (draft.trim() && !busy) event.currentTarget.form?.requestSubmit();}}} />
                     <div className="guided-composer-bottom"><span>Enter to send · Shift + Enter for a new line</span><button disabled={busy || !draft.trim()}>{summarizing ? "Get final feedback" : "Send message"}</button></div>
                 </form>
             </footer>}

@@ -108,12 +108,12 @@ test('local-style tutorial, documents, active loading, detour, and step controls
         await setDraft('Keep this draft');
         await click(document.querySelector('[aria-label="Tutor mode"] button'));
         const javis = structuredClone(ready); javis.tutor_mode='javis';javis.socratic.tutor_mode='javis';
-        javis.messages.push({role:'assistant',tutor_mode:'javis',content:'Javis here.',lead_in:'Javis here.',next_thinking_step:''});
+
         await act(async()=>resolver(javis));
         assert.equal(document.querySelector('[aria-label="Tutor mode"] button').getAttribute('aria-pressed'),'true');
-        assert.equal(document.querySelectorAll('.guided-messages article').length,count+1);
+        assert.equal(document.querySelectorAll('.guided-messages article').length,count);
         assert.equal(document.querySelector('textarea').value,'Keep this draft');
-        assert.equal(document.querySelector('.guided-continue'),null);
+        assert.ok(document.querySelector('.guided-continue'));
         assert.match(document.querySelector('.guided-chat-heading').textContent,/Javis/);
     } finally { await act(async()=>root.unmount());await vite.close();dom.window.close(); }
 });
