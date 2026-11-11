@@ -18,7 +18,7 @@ const STORAGE = "braintutor_portfolio_guided_v1";
 function load(): Session | null {
     try {
         const saved = JSON.parse(sessionStorage.getItem(STORAGE) || "null");
-        if (!saved || !Array.isArray(saved.messages) || !Array.isArray(saved.steps)) return null;
+        if (!saved || !saved.document_token || !Array.isArray(saved.messages) || !Array.isArray(saved.steps)) return null;
         // Keep sessions from before the spelling correction usable.
         if (saved.tutor_mode === "javis") saved.tutor_mode = "jarvis";
         if (saved.socratic?.tutor_mode === "javis") saved.socratic.tutor_mode = "jarvis";
@@ -66,6 +66,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
     const [summarizing, setSummarizing] = useState(false);
     const originalRef = useRef<string | null>(null);
     const reply = useRef<HTMLTextAreaElement>(null);
+    const fileInput = useRef<HTMLInputElement>(null);
     const messagesPanel = useRef<HTMLDivElement>(null);
     const end = useRef<HTMLDivElement>(null);
     const controller = useRef<AbortController | null>(null);
@@ -102,6 +103,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
     const last = index === (session?.steps.length || 0) - 1;
     async function send(action: string, nextMode: TutorMode = mode) {
         if (busy) return;
+        if (!session?.document_token) {setPopup("Upload a document before starting the chat."); return;}
         setBusy(true);
         setPending(["message", "finish"].includes(action) ? draft : "");
         const startedAt = Date.now();
@@ -111,13 +113,6 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
         const timeout = window.setTimeout(() => abort.abort(), 180000);
         try {
             let active = session;
-            if (!active && action === "message") {
-                const opening = await fetch(backendUrl, { method: "POST", headers: {"Content-Type":"application/json"}, signal: abort.signal,
-                    body: JSON.stringify({action:"start", tutor_mode:nextMode}) });
-                const initial = await opening.json();
-                if (!opening.ok) throw new Error(initial.detail || "Could not start the conversation.");
-                active = initial;
-            }
             const response = await fetch(backendUrl, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 signal: abort.signal,
@@ -181,7 +176,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
             <div className="guided-brand"><span>SQ</span><div><h2>Socratic Lab</h2><p>GUIDE, LEARN, THINK!</p></div></div>
             {materials && session ? <section className="guided-document-viewer">
                 <div className="guided-document-toolbar"><h3>Course material</h3><button className="guided-close" onClick={() => setMaterials(false)}>× Close</button></div>
-                <strong className="guided-document-name">{session.document_title || "Code review practice guide"}</strong>
+                <strong className="guided-document-name">{session.document_title || "Uploaded document"}</strong>
                 <div className="guided-zoom-controls"><button onClick={() => setZoom(Math.max(75,zoom-25))} disabled={zoom <= 75} aria-label="Zoom out">−</button><output>{zoom}%</output><button onClick={() => setZoom(Math.min(200,zoom+25))} disabled={zoom >= 200} aria-label="Zoom in">+</button><button onClick={() => setZoom(100)}>Reset</button></div>
                 {original?.file.type === "application/pdf" || original?.file.name.toLowerCase().endsWith(".pdf")
                     ? <div className="guided-pdf-scroll"><div style={{width: `${zoom}%`, height: `${650*zoom/100}px`}}><iframe title="Original course document" src={original.url} style={{width:`${10000/zoom}%`,height:650,transform:`scale(${zoom/100})`,transformOrigin:"top left"}} /></div></div>
@@ -193,15 +188,15 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
                     <span className="guided-recommended">Highly recommended before chatting</span>
                     <p>Read your material, then explore it with your tutor.</p>
                     <label className={`guided-file-button${busy ? " is-disabled" : ""}`}><span aria-hidden="true">＋</span> Upload document
-                        <input type="file" disabled={busy} onChange={event => { void uploadFile(event.target.files?.[0]); event.target.value = ""; }} />
+                        <input ref={fileInput} type="file" disabled={busy} onChange={event => { void uploadFile(event.target.files?.[0]); event.target.value = ""; }} />
                     </label>
                     <p className="guided-file-limits">PDF · DOCX · PPTX · LaTeX (.tex)<br />Up to 2 MB · 12,000 text characters<br />Up to 30 PDF pages or slides</p>
-                    <div className="guided-document-row" data-guided-tour="document">
-                        <span className="guided-file-icon" aria-hidden="true">▤</span><strong>{session?.document_title || "Code review practice guide"}</strong>
+                    {session && <div className="guided-document-row" data-guided-tour="document">
+                        <span className="guided-file-icon" aria-hidden="true">▤</span><strong>{session?.document_title || "Uploaded document"}</strong>
                         {session ? <div className="guided-document-actions"><button onClick={() => {setMaterials(true);setZoom(100);}}>View</button><button onClick={downloadMaterial}>↓ Download</button></div>
-                            : <span className="guided-sample-tag">Sample guide included</span>}
-                    </div>
-                    <button className="guided-outline guided-restart" disabled={busy} onClick={() => send("start")}>{session ? "↻ Restart activity" : "Start sample activity"}</button>
+                            : null}
+                    </div>}
+                    {session && <button className="guided-outline guided-restart" disabled={busy} onClick={() => send("start")}>↻ Restart activity</button>}
                 </section>
                 <div className="guided-sidebar-note"><span aria-hidden="true">✦</span><p>Ask about a word or idea whenever you get stuck. You can return to your original question.</p></div>
                 <details className="guided-usage"><summary>Demo limits & privacy</summary><p>3 uploads per day and 30 replies per hour per visitor. Shared daily allowances also apply. Document text is sent to OpenAI. Your session is saved in this browser tab.</p></details>
@@ -210,7 +205,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
         <section className="guided-chat" aria-label="Guided Socratic conversation">
             <header className="guided-chat-heading"><span className="guided-tool-icon" aria-hidden="true"><img src={`/assets/chat-widget/avatars/${mode}.jpg`} alt="" width={43} height={43} /></span><div><h2>{mode === "jarvis" ? "Jarvis" : "Socrates"}</h2><p>{mode === "jarvis" ? "Friendly questions grounded in your documents." : "Guided questions grounded in your documents."}</p></div><div className="guided-header-actions"><div className="guided-mode-switch" role="group" aria-label="Tutor mode"><button disabled={busy} aria-pressed={mode === "jarvis"} onClick={() => switchMode("jarvis")}>Jarvis</button><button disabled={busy} aria-pressed={mode === "socrates"} onClick={() => switchMode("socrates")}>Socrates</button></div><button data-guided-tour="tutorial" onClick={() => {setMaterials(false);setTutorial(true);}}>Tutorial</button><button className="guided-expand" aria-label={fullscreen ? "Exit fullscreen" : "Expand chat"} aria-pressed={fullscreen} onClick={() => setFullscreen(!fullscreen)}>{fullscreen ? "⤢" : "⛶"}</button></div></header>
             <div className="guided-messages" ref={messagesPanel} data-guided-tour="conversation" aria-live="polite">
-                {!session && <div className="guided-intro"><span className="guided-intro-mark"><img src={`/assets/chat-widget/avatars/${mode}.jpg`} alt="" width={52} height={52} /></span><span className="guided-eyebrow">{mode === "jarvis" ? "YOUR DOCUMENT. A FRIENDLY CONVERSATION." : "ONE QUESTION. ONE STEP AT A TIME."}</span><h1>Think it through.<br />Make it yours.</h1><p>{mode === "jarvis" ? "Explore your document with Jarvis through friendly questions and clear explanations. Start with a scenario and share your thinking." : "Bring a document and explore it with Socrates. Start with a scenario, share your reasoning, and ask for help along the way."}</p><button disabled={busy} onClick={() => send("start")}>Try the sample activity <span aria-hidden="true">→</span></button><span className="guided-intro-note">Or upload your own course material on the left.</span></div>}
+                {!session && <div className="guided-intro"><span className="guided-intro-mark"><img src={`/assets/chat-widget/avatars/${mode}.jpg`} alt="" width={52} height={52} /></span><span className="guided-eyebrow">YOUR DOCUMENT. YOUR LEARNING.</span><h1>Start with your document.</h1><p>Upload a document you want to understand. {mode === "jarvis" ? "Jarvis" : "Socrates"} will build a short learning activity from it, explain ideas, and guide you with questions.</p><ol className="guided-start-steps"><li><strong>Upload</strong> a PDF, Word, PowerPoint, or LaTeX file.</li><li><strong>Explore</strong> its ideas through a scenario and questions.</li><li><strong>Ask for help</strong> whenever something is unclear.</li></ol><div className="guided-start-actions"><button disabled={busy} onClick={() => fileInput.current?.click()}>＋ Upload document</button><button className="guided-outline" onClick={() => setTutorial(true)}>Tutorial</button></div><span className="guided-intro-note">Choose Jarvis for a friendly tone or Socrates for a formal tone. Both use your document.</span></div>}
                 {session?.messages.map((message, i) => {
                     const stepMatch = message.role === "assistant" ? message.content.match(/^Step (\d+): ([^\n]+)/) : null;
                     const isLatest = i === latestAssistant;
@@ -234,7 +229,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
                 {error && <p className="guided-error" role="alert">{error}</p>}
                 <div ref={end} />
             </div>
-            {!finished && <footer data-guided-tour="composer" className={summarizing ? "is-summarizing" : ""}>
+            {session && !finished && <footer data-guided-tour="composer" className={summarizing ? "is-summarizing" : ""}>
                 <form onSubmit={event => { event.preventDefault(); void send(summarizing ? "finish" : "message"); }}>
                     <label htmlFor="guided-reply">{summarizing ? "Summarize what you learned" : "Share your thinking"}</label>
                     <textarea ref={reply} id="guided-reply" rows={2} maxLength={4000} placeholder={summarizing ? "In my own words, I learned…" : "Write your answer or ask a question…"} value={draft} onChange={e => setDraft(e.target.value)} disabled={busy} onKeyDown={event => {if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {event.preventDefault(); if (draft.trim() && !busy) event.currentTarget.form?.requestSubmit();}}} />

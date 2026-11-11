@@ -22,10 +22,10 @@ export function AtomLoader({ message, title = "Socratic tutor" }: { message: str
 }
 
 const TOUR = [
-    { target: "materials", title: "Choose your course material", detail: "Upload a PDF, Word, PowerPoint, or LaTeX document. You can also start with the sample guide.", preview: "Your document → a short guided activity" },
+    { target: "materials", title: "Choose your course material", detail: "Upload your own PDF, Word, PowerPoint, or LaTeX document. The tutor starts from that document; no sample material is included.", preview: "Your document → a short guided activity" },
     { target: "document", title: "Read before you begin", detail: "Use View to read the material beside the chat, or Download to keep a copy. You can return to it at any time.", preview: "View document · Zoom in · Download" },
-    { target: "conversation", title: "Choose how to chat", detail: "Both modes guide you with scenarios and Socratic questions. Jarvis uses friendly, casual wording; Socrates uses formal wording. Switching keeps your conversation and progress.", preview: "A teammate finds a problem in your code. What would you check first, and why?" },
-    { target: "composer", title: "Ask for help whenever you need it", detail: "Ask about an unfamiliar term or explain what is confusing. During a subtopic discussion, Back to the original question restores the question you paused.", preview: "You: What does an edge case mean?" },
+    { target: "conversation", title: "Choose how to chat", detail: "Both modes guide you with scenarios and Socratic questions. Jarvis uses friendly, casual wording; Socrates uses formal wording. Switching keeps your conversation and progress.", preview: "Your document → a relevant scenario → one question at a time." },
+    { target: "composer", title: "Ask for help whenever you need it", detail: "Ask about an unfamiliar term or explain what is confusing. During a subtopic discussion, Back to the original question restores the question you paused.", preview: "You: Could you explain this term from my document?" },
     { target: "actions", title: "Continue through the learning steps", detail: "In either mode, Continue to next step appears below the reply when the step is ready. After the final step, summarize your learning and review the feedback.", preview: "Discuss → Continue → Summarize → Final feedback" },
 ];
 export function ChatTutorial({ onClose }: { onClose: () => void }) {

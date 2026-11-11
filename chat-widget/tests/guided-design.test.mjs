@@ -8,7 +8,7 @@ import React, { act } from 'react';
 
 test('local-style tutorial, documents, active loading, detour, and step controls work together', async () => {
     const dom = new JSDOM('<div id="root"></div>', {url:'http://localhost/'});
-    for (const key of ['window','document','HTMLElement','HTMLTextAreaElement','MouseEvent','KeyboardEvent','Event','File','Blob','sessionStorage']) globalThis[key] = dom.window[key];
+    for (const key of ['window','document','HTMLElement','HTMLTextAreaElement','MouseEvent','KeyboardEvent','Event','File','Blob','FormData','sessionStorage']) globalThis[key] = dom.window[key];
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
     window.matchMedia = () => ({matches:false});
     dom.window.HTMLElement.prototype.scrollIntoView = () => {};
@@ -16,19 +16,24 @@ test('local-style tutorial, documents, active loading, detour, and step controls
     const vite = await createServer({server:{middlewareMode:true,hmr:false},logLevel:'error'});
     const { createRoot } = await import('react-dom/client');
     const root = createRoot(document.getElementById('root'));
+    URL.createObjectURL = () => 'blob:test-upload';
+    URL.revokeObjectURL = () => {};
     let calls = 0;
     const first = {role:'assistant', content:'Step 1: Review the feedback\n\nA teammate reports a crash.\n\nWhat would you check first?',lead_in:'Step 1: Review the feedback\n\nA teammate reports a crash.',next_thinking_step:'What would you check first?'};
-    const session = {messages:[first],socratic:{learning_step_index:0,next_thinking_step:first.next_thinking_step},steps:[{title:'Review the feedback',goal:'Inspect the issue'},{title:'Respond',goal:'Explain a fix'},{title:'Check the fix',goal:'Test the behavior'}],material:'A reviewer inspects behavior and identifies edge cases. The author adds tests before merging.',document_title:'Code review guide',conversation_id:'fixture'};
+    const session = {messages:[first],socratic:{learning_step_index:0,next_thinking_step:first.next_thinking_step},steps:[{title:'Review the feedback',goal:'Inspect the issue'},{title:'Respond',goal:'Explain a fix'},{title:'Check the fix',goal:'Test the behavior'}],material:'A reviewer inspects behavior and identifies edge cases. The author adds tests before merging.',document_title:'Uploaded lesson.tex',document_token:'signed-test-document',conversation_id:'fixture'};
     let resolver;
     globalThis.fetch = async (_url, request) => {
         calls++;
+        if (request.body instanceof FormData) return {ok:true,json:async()=>({document_token:'signed-test-document',title:'lesson.tex'})};
         const body=JSON.parse(request.body);
+        assert.equal(body.document_token,'signed-test-document');
         if(body.action==='start') {const initial=structuredClone(session);initial.tutor_mode=body.tutor_mode;initial.socratic.tutor_mode=body.tutor_mode;return {ok:true,json:async()=>initial};}
         return new Promise(resolve=>{resolver=(result)=>resolve({ok:true,json:async()=>result});});
     };
     const click = async (button) => { assert.ok(button); await act(async()=>{button.click();}); };
     const byText = text => Array.from(document.querySelectorAll('button')).find(button=>button.textContent.includes(text));
     try {
+        sessionStorage.setItem('braintutor_portfolio_guided_v1',JSON.stringify({...session,document_token:null}));
         const {default: Demo} = await vite.ssrLoadModule('/src/GuidedDemo.tsx');
         await act(async()=>root.render(React.createElement(Demo,{backendUrl:'/api/public/guided'})));
         const hostStyle = document.createElement('style');
@@ -45,7 +50,9 @@ test('local-style tutorial, documents, active loading, detour, and step controls
         assert.equal(modeButtons[0].textContent, 'Jarvis');
         assert.match(document.querySelector('.guided-tool-icon img').src,/jarvis\.jpg$/);
         assert.equal(modeButtons[0].getAttribute('aria-pressed'), 'true');
-        assert.ok(document.querySelector('footer textarea'));
+        assert.equal(document.querySelector('footer textarea'),null);
+        assert.doesNotMatch(document.body.textContent,/Code review|Start sample/);
+        assert.ok(byText('＋ Upload document'));
         await click(modeButtons[1]);
         assert.equal(modeButtons[1].getAttribute('aria-pressed'), 'true');
         assert.match(document.querySelector('.guided-tool-icon img').src,/socrates\.jpg$/);
@@ -61,7 +68,10 @@ test('local-style tutorial, documents, active loading, detour, and step controls
         assert.match(document.querySelector('[role="alertdialog"]').textContent,/PDF, Word/);
         assert.equal(calls,0);
         await click(byText('Got it'));
-        await click(byText('Start sample activity'));
+        Object.defineProperty(input,'files',{configurable:true,value:[new File(['A real lesson about inspecting evidence and applying it.'],'lesson.tex')]});
+        await act(async()=>input.dispatchEvent(new Event('change',{bubbles:true})));
+        assert.equal(calls,2);
+        assert.ok(document.querySelector('footer textarea'));
         assert.ok(document.querySelector('.guided-message-header .guided-avatar'));
         assert.match(document.querySelector('.guided-thinking-step').textContent,/What would you check/);
         assert.equal(document.querySelector('.guided-continue'),null);
