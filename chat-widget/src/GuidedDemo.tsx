@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
+import { AtomLoader, ChatTutorial } from "./LocalChatDesign";
 import "./guided-demo.css";
 
-type Message = { role: "user" | "assistant"; content: string; lead_in?: string; next_thinking_step?: string };
+type Message = { role: "user" | "assistant"; content: string; lead_in?: string; next_thinking_step?: string; created_at?: string; response_seconds?: number; sources?: string[] };
 type Step = { title: string; goal: string };
 type State = {
     learning_step_index?: number;
@@ -31,6 +32,7 @@ function TutorContent({ message }: { message: Message }) {
         question = last.replace(/\*/g, "").trim().endsWith("?") ? last : "";
         lead = question ? parts.slice(0, -1).join("\n\n") : message.content;
     }
+    lead = lead?.replace(/^Step \d+: [^\n]+\n\n/, "");
     return <>
         {lead && <div className="guided-tutor-explanation"><Text value={lead} /></div>}
         {question && <section className="guided-thinking-step" aria-label="Your next thinking step">
@@ -47,13 +49,44 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
     const [popup, setPopup] = useState("");
     const [uploading, setUploading] = useState(false);
     const [materials, setMaterials] = useState(false);
+    const [tutorial, setTutorial] = useState(false);
+    const [fullscreen, setFullscreen] = useState(false);
+    const [zoom, setZoom] = useState(100);
+    const [original, setOriginal] = useState<{url: string; file: File} | null>(null);
+    const [pending, setPending] = useState("");
+    const [summarizing, setSummarizing] = useState(false);
+    const originalRef = useRef<string | null>(null);
+    const reply = useRef<HTMLTextAreaElement>(null);
+    const messagesPanel = useRef<HTMLDivElement>(null);
     const end = useRef<HTMLDivElement>(null);
     const controller = useRef<AbortController | null>(null);
     useEffect(() => {
-        if (session) sessionStorage.setItem(STORAGE, JSON.stringify(session));
-        end.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        try { if (session) sessionStorage.setItem(STORAGE, JSON.stringify(session)); } catch { /* Storage can be unavailable in private browsing. */ }
+        const panel = messagesPanel.current;
+        if (panel) panel.scrollTo({ top: panel.scrollHeight, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     }, [session, busy]);
-    useEffect(() => () => controller.current?.abort(), []);
+    useEffect(() => () => { controller.current?.abort(); if (originalRef.current) URL.revokeObjectURL(originalRef.current); }, []);
+    useEffect(() => {
+        if (!fullscreen) return;
+        const previous = document.body.style.overflow; document.body.style.overflow = "hidden";
+        const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setFullscreen(false); };
+        window.addEventListener("keydown", escape);
+        return () => { document.body.style.overflow = previous; window.removeEventListener("keydown", escape); };
+    }, [fullscreen]);
+    function stamp(result: Session, elapsed?: number) {
+        const now = new Date().toISOString();
+        result.messages = result.messages.map((message, i) => ({ ...message,
+            created_at: message.created_at || session?.messages[i]?.created_at || now,
+            response_seconds: i === result.messages.length - 1 ? elapsed : session?.messages[i]?.response_seconds,
+        }));
+        return result;
+    }
+    function downloadMaterial() {
+        const url = original?.url || URL.createObjectURL(new Blob([session?.material || ""], {type: "text/plain"}));
+        const link = document.createElement("a"); link.href = url;
+        link.download = original?.file.name || `${session?.document_title || "Course material"}.txt`;
+        link.click(); if (!original) window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
     const index = session?.socratic.learning_step_index || 0;
     const finished = session?.socratic.phase === "completed";
     const ready = session?.socratic.step_readiness?.ready && !session?.socratic.learning_detour;
@@ -61,6 +94,8 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
     async function send(action: string) {
         if (busy) return;
         setBusy(true);
+        setPending(["message", "finish"].includes(action) ? draft : "");
+        const startedAt = Date.now();
         setError("");
         const abort = new AbortController();
         controller.current = abort;
@@ -79,7 +114,8 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
             const result = await response.json();
             if (!response.ok) throw new Error(typeof result.detail === "string" ? result.detail : "The demo could not complete this request. Please retry.");
             if (!Array.isArray(result.messages) || !Array.isArray(result.steps)) throw new Error("The demo returned an unexpected response.");
-            setSession(result);
+            setSession(stamp(result, ["message", "finish"].includes(action) ? Math.max(1, Math.round((Date.now() - startedAt) / 1000)) : undefined));
+            if (action === "start" || action === "continue" || action === "finish") setSummarizing(false);
             setDraft("");
         } catch (cause) {
             setError(cause instanceof Error && cause.name === "AbortError"
@@ -87,7 +123,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
                 : cause instanceof Error ? cause.message : "Unable to connect. Please retry.");
         } finally {
             window.clearTimeout(timeout);
-            setBusy(false);
+            setBusy(false); setPending("");
         }
     }
     async function uploadFile(file?: File) {
@@ -110,52 +146,84 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
                 body: JSON.stringify({ action: "start", document_token: data.document_token }) });
             const result = await started.json();
             if (!started.ok) throw new Error(result.detail || "Could not open the activity.");
-            setSession(result); setDraft(""); setMaterials(false);
+            if (originalRef.current) URL.revokeObjectURL(originalRef.current);
+            const url = URL.createObjectURL(file); originalRef.current = url; setOriginal({url,file});
+            setSession(stamp(result)); setDraft(""); setMaterials(false); setSummarizing(false); setZoom(100);
         } catch (cause) { setPopup(cause instanceof Error ? cause.message : "Could not upload this file."); }
         finally { window.clearTimeout(timeout); setBusy(false); setUploading(false); }
     }
-    return <div className="guided-demo">
-        <aside className="guided-sidebar">
-            <div className="guided-brand"><span>SQ</span><div><h2>Socratic Lab</h2><p>Chat with your document</p></div></div>
-            <button className="guided-outline" disabled={busy} onClick={() => send("start")}>{session ? "Restart demo" : "Start guided demo"}</button>
-            <section className="guided-upload">
-                <h3>Course materials</h3>
-                <p>Upload a document to build a three-step practice session.</p>
-                <label className="guided-file-button">Upload document
-                    <input type="file" disabled={busy} onChange={event => { void uploadFile(event.target.files?.[0]); event.target.value = ""; }} />
-                </label>
-                <p className="guided-file-limits">PDF · DOCX · PPTX · LaTeX (.tex)<br />2 MB maximum · 12,000 text characters<br />Up to 30 PDF pages or slides</p>
-                <p className="guided-file-limits">3 uploads per day and 30 replies per hour per visitor. A shared daily allowance also applies.</p>
-                {session && <><strong className="guided-document-name">{session.document_title || "Code review practice guide"}</strong>
-                    <button className="guided-outline" onClick={() => setMaterials(!materials)}>{materials ? "Hide" : "Read"} document</button>
-                    {materials && <div className="guided-material">{session.material}</div>}</>}
-            </section>
+    const latestAssistant = session?.messages.reduce((latest, message, i) => message.role === "assistant" ? i : latest, -1) ?? -1;
+    return <div className={`guided-demo${fullscreen ? " is-fullscreen" : ""}`}>
+        <aside className={`guided-sidebar${materials ? " is-viewing-document" : ""}`}>
+            <div className="guided-brand"><span>SQ</span><div><h2>Socratic Lab</h2><p>GUIDE, LEARN, THINK!</p></div></div>
+            {materials && session ? <section className="guided-document-viewer">
+                <div className="guided-document-toolbar"><h3>Course material</h3><button className="guided-close" onClick={() => setMaterials(false)}>× Close</button></div>
+                <strong className="guided-document-name">{session.document_title || "Code review practice guide"}</strong>
+                <div className="guided-zoom-controls"><button onClick={() => setZoom(Math.max(75,zoom-25))} disabled={zoom <= 75} aria-label="Zoom out">−</button><output>{zoom}%</output><button onClick={() => setZoom(Math.min(200,zoom+25))} disabled={zoom >= 200} aria-label="Zoom in">+</button><button onClick={() => setZoom(100)}>Reset</button></div>
+                {original?.file.type === "application/pdf" || original?.file.name.toLowerCase().endsWith(".pdf")
+                    ? <div className="guided-pdf-scroll"><div style={{width: `${zoom}%`, height: `${650*zoom/100}px`}}><iframe title="Original course document" src={original.url} style={{width:`${10000/zoom}%`,height:650,transform:`scale(${zoom/100})`,transformOrigin:"top left"}} /></div></div>
+                    : <div className="guided-material" style={{fontSize:`${14*zoom/100}px`}}>{session.material}</div>}
+                <button className="guided-download" onClick={downloadMaterial}>↓ Download {original ? "original file" : "document text"}</button>
+            </section> : <>
+                <section className="guided-upload" data-guided-tour="materials">
+                    <div className="guided-section-heading"><span className="guided-section-icon" aria-hidden="true">▤</span><h3>Course materials</h3></div>
+                    <span className="guided-recommended">Highly recommended before chatting</span>
+                    <p>Read your material, then explore it with your tutor.</p>
+                    <label className={`guided-file-button${busy ? " is-disabled" : ""}`}><span aria-hidden="true">＋</span> Upload document
+                        <input type="file" disabled={busy} onChange={event => { void uploadFile(event.target.files?.[0]); event.target.value = ""; }} />
+                    </label>
+                    <p className="guided-file-limits">PDF · DOCX · PPTX · LaTeX (.tex)<br />Up to 2 MB · 12,000 text characters<br />Up to 30 PDF pages or slides</p>
+                    <div className="guided-document-row" data-guided-tour="document">
+                        <span className="guided-file-icon" aria-hidden="true">▤</span><strong>{session?.document_title || "Code review practice guide"}</strong>
+                        {session ? <div className="guided-document-actions"><button onClick={() => {setMaterials(true);setZoom(100);}}>View</button><button onClick={downloadMaterial}>↓ Download</button></div>
+                            : <span className="guided-sample-tag">Sample guide included</span>}
+                    </div>
+                    <button className="guided-outline guided-restart" disabled={busy} onClick={() => send("start")}>{session ? "↻ Restart activity" : "Start sample activity"}</button>
+                </section>
+                <div className="guided-sidebar-note"><span aria-hidden="true">✦</span><p>Ask about a word or idea whenever you get stuck. You can return to your original question.</p></div>
+                <details className="guided-usage"><summary>Demo limits & privacy</summary><p>3 uploads per day and 30 replies per hour per visitor. Shared daily allowances also apply. Document text is sent to OpenAI. Your session is saved in this browser tab.</p></details>
+            </>}
         </aside>
         <section className="guided-chat" aria-label="Guided Socratic conversation">
-            <header><h2>{finished ? "Practice complete" : session ? session.steps[index]?.title : "Try BrainTutor"}</h2><span>OpenAI demo</span></header>
-            <div className="guided-messages" aria-live="polite">
-                {!session && <div className="guided-intro"><h1>Learn with your document</h1><p>Work through three short steps with a Socratic tutor. Ask about unfamiliar terms at any time, then return to the question you paused.</p><p>Upload course material on the left, or try the sample code review guide. Document text is sent to OpenAI for tutoring. Your session stays in this browser tab.</p><button disabled={busy} onClick={() => send("start")}>Start guided demo</button></div>}
-                {session?.messages.map((message, i) => <article key={i} className={message.role}>
-                    <span>{message.role === "assistant" ? "Socratic tutor" : "You"}</span>
-                    <div>{message.role === "assistant" ? <TutorContent message={message} /> : <Text value={message.content} />}</div>
-                </article>)}
-                {busy && <p className="guided-working" role="status"><span />{uploading ? "Reading your document and building your practice session…" : session ? "Preparing your reply…" : "Opening the guided activity…"}</p>}
+            <header className="guided-chat-heading"><span className="guided-tool-icon" aria-hidden="true">SC</span><div><h2>Socratic Chat</h2><p>Questions grounded in your course materials.</p></div><div className="guided-header-actions"><button data-guided-tour="tutorial" onClick={() => {setMaterials(false);setTutorial(true);}}>Tutorial</button><button className="guided-expand" aria-label={fullscreen ? "Exit fullscreen" : "Expand chat"} aria-pressed={fullscreen} onClick={() => setFullscreen(!fullscreen)}>{fullscreen ? "⤢" : "⛶"}</button></div></header>
+            <div className="guided-messages" ref={messagesPanel} data-guided-tour="conversation" aria-live="polite">
+                {!session && <div className="guided-intro"><span className="guided-intro-mark">S</span><span className="guided-eyebrow">ONE QUESTION. ONE STEP AT A TIME.</span><h1>Think it through.<br />Make it yours.</h1><p>Bring a document and explore it with your Socratic tutor. Start with a scenario, share your reasoning, and ask for help along the way.</p><button disabled={busy} onClick={() => send("start")}>Try the sample activity <span aria-hidden="true">→</span></button><span className="guided-intro-note">Or upload your own course material on the left.</span></div>}
+                {session?.messages.map((message, i) => {
+                    const stepMatch = message.role === "assistant" ? message.content.match(/^Step (\d+): ([^\n]+)/) : null;
+                    const isLatest = i === latestAssistant;
+                    return <Fragment key={i}>
+                        {stepMatch && <div className="guided-step-divider" role="separator"><span>Step {stepMatch[1]} of {session.steps.length}</span><strong>{stepMatch[2]}</strong></div>}
+                        <article className={`${message.role}${isLatest ? " is-current-reply" : ""}`}>
+                            <header className="guided-message-header"><div><span className="guided-avatar" aria-hidden="true">{message.role === "assistant" ? "S" : "Y"}</span><strong>{message.role === "assistant" ? "Socratic tutor" : "You"}</strong></div><div className="guided-message-meta">{message.created_at && <time dateTime={message.created_at}>{new Date(message.created_at).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}</time>}{isLatest && message.response_seconds && <span>Generated in {message.response_seconds}s</span>}</div></header>
+                            <div className="guided-message-body">{message.role === "assistant" ? <TutorContent message={message} /> : <Text value={message.content} />}
+                                {message.sources?.length ? <details className="guided-source-details"><summary>View supporting sources</summary>{message.sources.map((source,n) => <blockquote key={n}><strong>{session.document_title}</strong><p>{source}</p></blockquote>)}<button onClick={() => setMaterials(true)}>View course material</button></details> : null}
+                            </div>
+                        </article>
+                        {isLatest && !finished && !summarizing && <div className="guided-inline-actions" data-guided-tour="actions">
+                            {session.socratic.learning_detour && <button disabled={busy} onClick={() => send("resume")}>Back to the original question</button>}
+                            {ready && <button className="guided-continue" disabled={busy} onClick={() => { if (last) {setSummarizing(true);window.setTimeout(() => reply.current?.focus(),0);} else void send("continue"); }}>{last ? "Finish conversation and summarize" : "Continue to next step"} <span aria-hidden="true">→</span></button>}
+                        </div>}
+                    </Fragment>;
+                })}
+                {busy && pending && <article className="user is-pending"><header className="guided-message-header"><div><span className="guided-avatar">Y</span><strong>You</strong></div><span className="guided-message-meta">Sending…</span></header><div className="guided-message-body"><Text value={pending} /></div></article>}
+                {busy && !uploading && <AtomLoader message={session ? "I’m preparing your reply using the course materials and our conversation." : "I’m opening your first scenario and question."} />}
+                {finished && <div className="guided-complete" role="status"><span aria-hidden="true">✦</span><div><strong>Practice complete</strong><p>Your summary and final feedback are ready to review.</p></div></div>}
                 {error && <p className="guided-error" role="alert">{error}</p>}
                 <div ref={end} />
             </div>
-            {session && !finished && <footer>
-                {session.socratic.learning_detour && <button disabled={busy} onClick={() => send("resume")}>Back to the original question</button>}
-                {ready && !last && <button disabled={busy} onClick={() => send("continue")}>Continue to next step</button>}
-                <form onSubmit={event => { event.preventDefault(); send(ready && last ? "finish" : "message"); }}>
-                    <label htmlFor="guided-reply">{ready && last ? "Summarize what you learned to finish" : "Share your thinking or ask for help"}</label>
-                    <textarea id="guided-reply" rows={2} maxLength={4000} value={draft} onChange={e => setDraft(e.target.value)} disabled={busy} />
-                    <button disabled={busy || !draft.trim()}>{ready && last ? "Get final feedback" : "Send"}</button>
+            {session && !finished && <footer data-guided-tour="composer" className={summarizing ? "is-summarizing" : ""}>
+                <form onSubmit={event => { event.preventDefault(); void send(summarizing ? "finish" : "message"); }}>
+                    <label htmlFor="guided-reply">{summarizing ? "Summarize what you learned" : "Share your thinking"}</label>
+                    <textarea ref={reply} id="guided-reply" rows={2} maxLength={4000} placeholder={summarizing ? "In my own words, I learned…" : "Write your answer or ask a question…"} value={draft} onChange={e => setDraft(e.target.value)} disabled={busy} onKeyDown={event => {if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {event.preventDefault(); if (draft.trim() && !busy) event.currentTarget.form?.requestSubmit();}}} />
+                    <div className="guided-composer-bottom"><span>Enter to send · Shift + Enter for a new line</span><button disabled={busy || !draft.trim()}>{summarizing ? "Get final feedback" : "Send message"}</button></div>
                 </form>
             </footer>}
             {finished && <footer><button onClick={() => send("start")} disabled={busy}>Try again</button></footer>}
         </section>
+        {uploading && <div className="guided-upload-overlay"><AtomLoader message="Generating setup from your selected document. Please keep this page open." /></div>}
+        {tutorial && <ChatTutorial onClose={() => setTutorial(false)} />}
         {popup && <div className="guided-modal-backdrop" onClick={() => setPopup("")}>
-            <section className="guided-upload-modal" role="alertdialog" aria-modal="true" aria-labelledby="upload-modal-title" onClick={event => event.stopPropagation()}>
+            <section className="guided-upload-modal" role="alertdialog" aria-modal="true" aria-labelledby="upload-modal-title" onClick={event => event.stopPropagation()} onKeyDown={event => {if (event.key === "Escape") setPopup("");}}>
                 <h2 id="upload-modal-title">Check your document</h2><p>{popup}</p>
                 <button autoFocus onClick={() => setPopup("")}>Got it</button>
             </section>

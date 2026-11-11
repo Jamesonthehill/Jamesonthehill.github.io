@@ -1,0 +1,92 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { JSDOM } from 'jsdom';
+import { createServer } from 'vite';
+import React, { act } from 'react';
+
+
+test('local-style tutorial, documents, active loading, detour, and step controls work together', async () => {
+    const dom = new JSDOM('<div id="root"></div>', {url:'http://localhost/'});
+    for (const key of ['window','document','HTMLElement','HTMLTextAreaElement','MouseEvent','KeyboardEvent','Event','File','Blob','sessionStorage']) globalThis[key] = dom.window[key];
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    window.matchMedia = () => ({matches:false});
+    dom.window.HTMLElement.prototype.scrollIntoView = () => {};
+    dom.window.HTMLElement.prototype.scrollTo = () => {};
+    const vite = await createServer({server:{middlewareMode:true,hmr:false},logLevel:'error'});
+    const { createRoot } = await import('react-dom/client');
+    const root = createRoot(document.getElementById('root'));
+    let calls = 0;
+    const first = {role:'assistant', content:'Step 1: Review the feedback\n\nA teammate reports a crash.\n\nWhat would you check first?',lead_in:'Step 1: Review the feedback\n\nA teammate reports a crash.',next_thinking_step:'What would you check first?'};
+    const session = {messages:[first],socratic:{learning_step_index:0,next_thinking_step:first.next_thinking_step},steps:[{title:'Review the feedback',goal:'Inspect the issue'},{title:'Respond',goal:'Explain a fix'},{title:'Check the fix',goal:'Test the behavior'}],material:'A reviewer inspects behavior and identifies edge cases. The author adds tests before merging.',document_title:'Code review guide',conversation_id:'fixture'};
+    let resolver;
+    globalThis.fetch = async (_url, request) => {
+        calls++;
+        const body=JSON.parse(request.body);
+        if(body.action==='start') return {ok:true,json:async()=>structuredClone(session)};
+        return new Promise(resolve=>{resolver=(result)=>resolve({ok:true,json:async()=>result});});
+    };
+    const click = async (button) => { assert.ok(button); await act(async()=>{button.click();}); };
+    const byText = text => Array.from(document.querySelectorAll('button')).find(button=>button.textContent.includes(text));
+    try {
+        const {default: Demo} = await vite.ssrLoadModule('/src/GuidedDemo.tsx');
+        await act(async()=>root.render(React.createElement(Demo,{backendUrl:'/api/public/guided'})));
+        assert.match(document.body.textContent,/Course materials/);
+        assert.equal(document.querySelector('.guided-sidebar ol'),null);
+        await click(byText('Tutorial'));
+        assert.ok(document.querySelector('[role="dialog"]'));
+        assert.equal(document.querySelectorAll('.guided-tour-shade').length,4);
+        await click(byText('Next')); assert.match(document.querySelector('.guided-tour-card').textContent,/Read before you begin/);
+        await click(document.querySelector('[aria-label="Close tutorial"]'));
+        const input = document.querySelector('input[type="file"]');
+        Object.defineProperty(input,'files',{configurable:true,value:[new File(['not allowed'],'bad.exe')]});
+        await act(async()=>input.dispatchEvent(new Event('change',{bubbles:true})));
+        assert.match(document.querySelector('[role="alertdialog"]').textContent,/PDF, Word/);
+        assert.equal(calls,0);
+        await click(byText('Got it'));
+        await click(byText('Start sample activity'));
+        assert.ok(document.querySelector('.guided-message-header .guided-avatar'));
+        assert.match(document.querySelector('.guided-thinking-step').textContent,/What would you check/);
+        assert.equal(document.querySelector('.guided-continue'),null);
+        await click(byText('View'));
+        assert.ok(document.querySelector('.guided-material'));
+        await click(document.querySelector('[aria-label="Zoom in"]'));
+        assert.equal(document.querySelector('.guided-zoom-controls output').textContent,'125%');
+        assert.equal(document.querySelector('.guided-material').style.fontSize,'17.5px');
+        await click(byText('Close'));
+        await click(document.querySelector('[aria-label="Expand chat"]'));
+        assert.ok(document.querySelector('.guided-demo.is-fullscreen'));
+        await click(document.querySelector('[aria-label="Exit fullscreen"]'));
+        const setDraft = async text => act(async()=>{
+            const textarea=document.querySelector('textarea');
+            Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(textarea,text);
+            textarea.dispatchEvent(new Event('input',{bubbles:true}));
+        });
+        await setDraft('What is an edge case?');
+        // Submit the real form so Enter and button submissions follow the same path.
+        await act(async()=>document.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
+        assert.ok(document.querySelector('.guided-processing-card svg .orbit-three'));
+        assert.match(document.querySelector('.guided-processing-card').textContent,/0s elapsed/);
+        assert.match(document.querySelector('.is-pending').textContent,/edge case/);
+        assert.equal(document.querySelector('textarea').disabled,true);
+        const detour=structuredClone(session);
+        detour.messages.push({role:'user',content:'What is an edge case?'},{role:'assistant',content:'An unusual input. What if the list is empty?',lead_in:'An unusual input.',next_thinking_step:'What if the list is empty?',sources:['The author adds tests before merging.']});
+        detour.socratic.learning_detour={question:first.next_thinking_step};
+        await act(async()=>resolver(detour));
+        assert.equal(document.querySelector('.guided-processing-card'),null);
+        assert.ok(byText('Back to the original question'));
+        assert.ok(document.querySelector('.guided-source-details'));
+        assert.equal(document.querySelector('.is-pending'),null);
+        await click(byText('Back to the original question'));
+        const resumed=structuredClone(session);resumed.messages=[...detour.messages,{...first,lead_in:'Okay, let’s apply what you learned. A teammate reports a crash.'}];
+        await act(async()=>resolver(resumed));
+        assert.match(document.querySelectorAll('.guided-thinking-step')[2].textContent,/What would you check first/);
+        assert.equal(byText('Back to the original question'),undefined);
+        await setDraft('I would reproduce the crash to understand the failure.');
+        await act(async()=>document.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
+        const ready=structuredClone(resumed);ready.socratic.step_readiness={ready:true};ready.messages.push({role:'user',content:'I would reproduce the crash.'},{role:'assistant',content:'You explained the purpose. Continue when ready.',lead_in:'You explained the purpose. Continue when ready.',next_thinking_step:''});
+        await act(async()=>resolver(ready));
+        assert.ok(document.querySelector('.guided-inline-actions .guided-continue'));
+        assert.ok(document.querySelector('footer textarea'));
+        assert.equal(document.querySelector('.guided-chat > footer .guided-continue'),null);
+    } finally { await act(async()=>root.unmount());await vite.close();dom.window.close(); }
+});
