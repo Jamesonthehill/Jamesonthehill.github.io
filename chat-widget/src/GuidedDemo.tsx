@@ -182,8 +182,8 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
                 <div className="guided-document-toolbar"><h3>Course material</h3><button className="guided-close" onClick={() => setMaterials(false)}>× Close</button></div>
                 <strong className="guided-document-name">{session.document_title || "Uploaded document"}</strong>
                 <div className="guided-zoom-controls"><button onClick={() => setZoom(Math.max(75,zoom-25))} disabled={zoom <= 75} aria-label="Zoom out">−</button><output>{zoom}%</output><button onClick={() => setZoom(Math.min(200,zoom+25))} disabled={zoom >= 200} aria-label="Zoom in">+</button><button onClick={() => setZoom(100)}>Reset</button></div>
-                {original?.file.type === "application/pdf" || original?.file.name.toLowerCase().endsWith(".pdf")
-                    ? <div className="guided-pdf-scroll"><div style={{width: `${zoom}%`, height: `${650*zoom/100}px`}}><iframe title="Original course document" src={original.url} style={{width:`${10000/zoom}%`,height:650,transform:`scale(${zoom/100})`,transformOrigin:"top left"}} /></div></div>
+                {original && (original.file.type === "application/pdf" || original.file.name.toLowerCase().endsWith(".pdf"))
+                    ? <iframe className="guided-pdf-frame" title="Original course document" src={`${original.url}#zoom=${zoom}`} />
                     : <div className="guided-material" style={{fontSize:`${14*zoom/100}px`}}>{session.material}</div>}
                 <button className="guided-download" onClick={downloadMaterial}>↓ Download {original ? "original file" : "document text"}</button>
             </section> : <>
