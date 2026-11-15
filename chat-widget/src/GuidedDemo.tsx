@@ -1,10 +1,11 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { AtomLoader, ChatTutorial } from "./LocalChatDesign";
 import { useServerReadiness } from "./useServerReadiness";
+import GuidedPdfPreview from "./GuidedPdfPreview";
 import "./guided-demo.css";
 
 type TutorMode = "jarvis" | "socrates";
-type Message = { role: "user" | "assistant"; content: string; lead_in?: string; next_thinking_step?: string; created_at?: string; response_seconds?: number; sources?: string[]; tutor_mode?: TutorMode };
+type Message = { role: "user" | "assistant"; content: string; lead_in?: string; next_thinking_step?: string; created_at?: string; response_seconds?: number; sources?: string[]; source_pages?: number[]; tutor_mode?: TutorMode };
 type Step = { title: string; goal: string };
 type State = {
     tutor_mode?: TutorMode;
@@ -61,6 +62,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
     const [popup, setPopup] = useState("");
     const [uploading, setUploading] = useState(false);
     const [materials, setMaterials] = useState(false);
+    const [sourcePage, setSourcePage] = useState<number>();
     const [tutorial, setTutorial] = useState(false);
     const [fullscreen, setFullscreen] = useState(false);
     const [zoom, setZoom] = useState(100);
@@ -174,18 +176,47 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
         if (!session) {setMode(nextMode); return;}
         void send("set_mode", nextMode);
     }
+    function openMaterial(page?: number) {
+        setSourcePage(page);
+        setZoom(100);
+        setMaterials(true);
+    }
+    const materialText = session?.material ?? "";
+    let previewText = materialText;
+    if (sourcePage && !original) {
+        let start = 0;
+        for (const marker of materialText.matchAll(/^-- (\d+) of \d+ --$/gm)) {
+            if (Number(marker[1]) === sourcePage) {
+                previewText = materialText.slice(start, marker.index).trim();
+                break;
+            }
+            start = marker.index! + marker[0].length;
+        }
+    }
     const latestAssistant = session?.messages.reduce((latest, message, i) => message.role === "assistant" ? i : latest, -1) ?? -1;
     return <div className={`guided-demo${fullscreen ? " is-fullscreen" : ""}`}>
         <aside className={`guided-sidebar${materials ? " is-viewing-document" : ""}`}>
-            <div className="guided-brand"><span>SQ</span><div><h2>Socratic Lab</h2><p>GUIDE, LEARN, THINK!</p></div></div>
+            {!materials && <div className="guided-brand"><span>SQ</span><div><h2>Socratic Lab</h2><p>GUIDE, LEARN, THINK!</p></div></div>}
             {materials && session ? <section className="guided-document-viewer">
-                <div className="guided-document-toolbar"><h3>Course material</h3><button className="guided-close" onClick={() => setMaterials(false)}>× Close</button></div>
-                <strong className="guided-document-name">{session.document_title || "Uploaded document"}</strong>
-                <div className="guided-zoom-controls"><button onClick={() => setZoom(Math.max(75,zoom-25))} disabled={zoom <= 75} aria-label="Zoom out">−</button><output>{zoom}%</output><button onClick={() => setZoom(Math.min(200,zoom+25))} disabled={zoom >= 200} aria-label="Zoom in">+</button><button onClick={() => setZoom(100)}>Reset</button></div>
+                <header className="guided-document-toolbar">
+                    <div><span className="guided-document-kicker">{original ? "Original course document" : "Course document text"}</span>
+                        <h3 className="guided-document-name">{session.document_title || "Uploaded document"}</h3></div>
+                    <div className="guided-document-actions">
+                        <button type="button" onClick={downloadMaterial}>{original ? "Download" : "Download document text"}</button>
+                        <button type="button" className="guided-close" onClick={() => setMaterials(false)}>Close document</button>
+                    </div>
+                </header>
+                <div className="guided-zoom-controls" role="group" aria-label="Document zoom">
+                    <button type="button" onClick={() => setZoom(Math.max(75, zoom - 25))} disabled={zoom <= 75} aria-label="Zoom out">−</button>
+                    <output>{zoom}%</output>
+                    <button type="button" onClick={() => setZoom(Math.min(200, zoom + 25))} disabled={zoom >= 200} aria-label="Zoom in">+</button>
+                    <button type="button" onClick={() => setZoom(100)} disabled={zoom === 100}>Reset zoom</button>
+                </div>
                 {original && (original.file.type === "application/pdf" || original.file.name.toLowerCase().endsWith(".pdf"))
-                    ? <iframe className="guided-pdf-frame" title="Original course document" src={`${original.url}#zoom=${zoom}`} />
-                    : <div className="guided-material" style={{fontSize:`${14*zoom/100}px`}}>{session.material}</div>}
-                <button className="guided-download" onClick={downloadMaterial}>↓ Download {original ? "original file" : "document text"}</button>
+                    ? <GuidedPdfPreview file={original.file} page={sourcePage ?? 1} zoom={zoom} onPage={setSourcePage} />
+                    : <div className="guided-material" style={{fontSize:`${14 * zoom / 100}px`}}>{previewText}</div>}
+                <footer className="guided-document-footer">{original?.file.name.toLowerCase().endsWith(".pdf")
+                    ? "Showing the original uploaded PDF." : "Showing extracted document text."}</footer>
             </section> : <>
                 <section className="guided-upload" data-guided-tour="materials">
                     <div className="guided-section-heading"><span className="guided-section-icon" aria-hidden="true">▤</span><h3>Course materials</h3></div>
@@ -197,7 +228,7 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
                     <p className="guided-file-limits">PDF · DOCX · PPTX · LaTeX (.tex)<br />Up to 2 MB · 12,000 text characters<br />Up to 30 PDF pages or slides</p>
                     {session && <div className="guided-document-row" data-guided-tour="document">
                         <span className="guided-file-icon" aria-hidden="true">▤</span><strong>{session?.document_title || "Uploaded document"}</strong>
-                        {session ? <div className="guided-document-actions"><button onClick={() => {setMaterials(true);setZoom(100);}}>View</button><button onClick={downloadMaterial}>↓ Download</button></div>
+                        {session ? <div className="guided-document-actions"><button onClick={() => openMaterial()}>View</button><button onClick={downloadMaterial}>↓ Download</button></div>
                             : null}
                     </div>}
                     {session && <button className="guided-outline guided-restart" disabled={busy || !serverReady} onClick={() => send("start")}>↻ Restart activity</button>}
@@ -222,7 +253,18 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
                         <article className={`${message.role}${isLatest ? " is-current-reply" : ""}`}>
                             <header className="guided-message-header"><div><span className="guided-avatar" aria-hidden="true">{message.role === "assistant" ? <img src={`/assets/chat-widget/avatars/${message.tutor_mode === "jarvis" ? "jarvis" : "socrates"}.jpg`} alt="" width={27} height={27} /> : "Y"}</span><strong>{message.role === "assistant" ? (message.tutor_mode === "jarvis" ? "Jarvis" : "Socrates") : "You"}</strong></div><div className="guided-message-meta">{message.created_at && <time dateTime={message.created_at}>{new Date(message.created_at).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}</time>}{isLatest && message.response_seconds && <span>Generated in {message.response_seconds}s</span>}</div></header>
                             <div className="guided-message-body">{message.role === "assistant" ? <TutorContent message={message} /> : <Text value={message.content} />}
-                                {message.sources?.length ? <details className="guided-source-details"><summary>View supporting sources</summary>{message.sources.map((source,n) => <blockquote key={n}><strong>{session.document_title}</strong><p>{source}</p></blockquote>)}<button onClick={() => setMaterials(true)}>View course material</button></details> : null}
+                                {message.sources?.length || message.source_pages?.length ? (
+                                    <details className="guided-source-details">
+                                        <summary><span className="guided-sources-show">View supporting sources</span><span className="guided-sources-hide">Hide supporting sources</span></summary>
+                                        <div className="guided-source-links">
+                                            {(message.source_pages?.length ? message.source_pages : [undefined]).map(page => (
+                                                <button key={page ?? "document"} type="button" onClick={() => openMaterial(page)}>
+                                                    {session.document_title || "Uploaded document"}{page ? ` · page ${page}` : ""}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </details>
+                                ) : null}
                             </div>
                         </article>
                         {isLatest && !finished && !summarizing && <div className="guided-inline-actions" data-guided-tour="actions">

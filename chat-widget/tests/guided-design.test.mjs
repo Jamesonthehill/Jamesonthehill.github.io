@@ -92,7 +92,7 @@ test('local-style tutorial, documents, active loading, detour, and step controls
         await click(document.querySelector('[aria-label="Zoom in"]'));
         assert.equal(document.querySelector('.guided-zoom-controls output').textContent,'125%');
         assert.equal(document.querySelector('.guided-material').style.fontSize,'17.5px');
-        await click(byText('Close'));
+        await click(byText('Close document'));
         await click(document.querySelector('[aria-label="Expand chat"]'));
         assert.ok(document.querySelector('.guided-demo.is-fullscreen'));
         await click(document.querySelector('[aria-label="Exit fullscreen"]'));
@@ -114,7 +114,14 @@ test('local-style tutorial, documents, active loading, detour, and step controls
         await act(async()=>resolver(detour));
         assert.equal(document.querySelector('.guided-processing-card'),null);
         assert.ok(byText('Back to the original question'));
-        assert.ok(document.querySelector('.guided-source-details'));
+        const sources = document.querySelector('.guided-source-details');
+        assert.ok(sources);
+        assert.equal(sources.querySelector('blockquote'), null);
+        const citation = sources.querySelector('.guided-source-links button');
+        assert.equal(citation.textContent, session.document_title);
+        await click(citation);
+        assert.ok(document.querySelector('.guided-document-viewer'));
+        await click(byText('Close document'));
         assert.equal(document.querySelector('.is-pending'),null);
         await click(byText('Back to the original question'));
         const resumed=structuredClone(session);resumed.messages=[...detour.messages,{...first,lead_in:'Okay, let’s apply what you learned. A teammate reports a crash.'}];
