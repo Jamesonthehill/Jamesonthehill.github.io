@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-labelledby="title desc">
+  <title id="title">Domain-Specific RAG Retrieval Optimization</title>
+  <desc id="desc">A retrieval pipeline diagram showing query decomposition, hybrid retrieval, reranking, and source-aware context selection, with Recall at 20 improving from 63.25 percent to 91.08 percent.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#18243d"/>
+      <stop offset="1" stop-color="#31538a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#79d7ff"/>
+      <stop offset="1" stop-color="#b2a4ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#081225" flood-opacity=".32"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="750" rx="38" fill="url(#bg)"/>
+  <circle cx="1080" cy="84" r="210" fill="#ffffff" opacity=".035"/>
+  <circle cx="120" cy="710" r="260" fill="#75d5ff" opacity=".055"/>
+
+  <g font-family="Inter, Arial, sans-serif" fill="#fff">
+    <text x="72" y="92" font-size="24" font-weight="600" letter-spacing="3" fill="#98cfff">INDEPENDENT TECHNICAL REPORT · 2026</text>
+    <text x="72" y="157" font-size="48" font-weight="750">Domain-Specific RAG</text>
+    <text x="72" y="213" font-size="48" font-weight="750">Retrieval Optimization</text>
+  </g>
+
+  <g filter="url(#shadow)" font-family="Inter, Arial, sans-serif">
+    <rect x="72" y="284" width="188" height="108" rx="20" fill="#fff" opacity=".96"/>
+    <text x="166" y="326" text-anchor="middle" font-size="18" font-weight="700" fill="#263b61">DECOMPOSE</text>
+    <text x="166" y="357" text-anchor="middle" font-size="16" fill="#61708c">1–3 subqueries</text>
+
+    <path d="M270 338h58" stroke="url(#accent)" stroke-width="8" stroke-linecap="round"/>
+    <path d="m318 324 18 14-18 14" fill="none" stroke="#9fc9ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="345" y="284" width="188" height="108" rx="20" fill="#fff" opacity=".96"/>
+    <text x="439" y="326" text-anchor="middle" font-size="18" font-weight="700" fill="#263b61">RETRIEVE</text>
+    <text x="439" y="357" text-anchor="middle" font-size="16" fill="#61708c">Dense + sparse</text>
+
+    <path d="M543 338h58" stroke="url(#accent)" stroke-width="8" stroke-linecap="round"/>
+    <path d="m591 324 18 14-18 14" fill="none" stroke="#9fc9ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="618" y="284" width="188" height="108" rx="20" fill="#fff" opacity=".96"/>
+    <text x="712" y="326" text-anchor="middle" font-size="18" font-weight="700" fill="#263b61">RERANK</text>
+    <text x="712" y="357" text-anchor="middle" font-size="16" fill="#61708c">Cross-encoder</text>
+
+    <path d="M816 338h58" stroke="url(#accent)" stroke-width="8" stroke-linecap="round"/>
+    <path d="m864 324 18 14-18 14" fill="none" stroke="#9fc9ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="891" y="284" width="237" height="108" rx="20" fill="#fff" opacity=".96"/>
+    <text x="1009" y="326" text-anchor="middle" font-size="18" font-weight="700" fill="#263b61">PACK CONTEXT</text>
+    <text x="1009" y="357" text-anchor="middle" font-size="16" fill="#61708c">Source-aware</text>
+  </g>
+
+  <g font-family="Inter, Arial, sans-serif">
+    <rect x="72" y="472" width="1056" height="196" rx="28" fill="#0d1830" opacity=".72" stroke="#91cfff" stroke-opacity=".3"/>
+    <text x="112" y="521" font-size="20" font-weight="650" fill="#b9c8df">EXPECTED-EVIDENCE COVERAGE</text>
+    <text x="112" y="599" font-size="52" font-weight="750" fill="#fff">Recall@20</text>
+    <text x="443" y="599" font-size="58" font-weight="750" fill="#ffbf8d">63.25%</text>
+    <path d="M671 580h88" stroke="#a9cfff" stroke-width="8" stroke-linecap="round"/>
+    <path d="m744 563 23 17-23 17" fill="none" stroke="#a9cfff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="817" y="599" font-size="58" font-weight="750" fill="#8cf0c4">91.08%</text>
+    <text x="112" y="637" font-size="19" fill="#9eb0cc">+27.83 percentage points · 44.0% relative gain</text>
+  </g>
+</svg>

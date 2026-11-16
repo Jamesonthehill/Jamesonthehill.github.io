@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Domain-Specific RAG Retrieval Optimization | Geonwoo Lee</title>
+  <meta name="author" content="Geonwoo Lee">
+  <meta name="description" content="Independent technical report on improving expected-evidence coverage in a domain-specific retrieval-augmented generation system.">
+  <meta name="keywords" content="RAG, retrieval-augmented generation, information retrieval, hybrid search, query decomposition, reranking, Qdrant">
+  <meta property="og:title" content="Domain-Specific RAG Retrieval Optimization">
+  <meta property="og:description" content="Recall@20 improved from 63.25% to 91.08% through query decomposition, cross-encoder reranking, and source-aware context selection.">
+  <meta property="og:image" content="https://jamesonthehill.com/assets/img/rag-retrieval-optimization.svg">
+  <meta property="og:type" content="article">
+  <link rel="icon" href="/assets/img/favicon-v4.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/apple-touch-icon-v3.png">
+  <link rel="canonical" href="https://jamesonthehill.com/projects/rag-retrieval-optimization/">
+  <link rel="stylesheet" href="/assets/css/bootstrap.min.css?a4b3f509e79c54a512b890d73235ef04">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous">
+  <link defer rel="stylesheet" href="/assets/css/academicons.min.css?f0b7046b84e425c55f3463ac249818f5">
+  <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap">
+  <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?591dab5a4e56573bf4ef7fd332894c99" id="highlight_theme_light">
+  <link rel="stylesheet" href="/assets/css/main.css?d41d8cd98f00b204e9800998ecf8427e">
+  <link rel="stylesheet" href="/assets/css/portfolio-refresh.css">
+  <script src="/assets/js/theme.js?9a0c749ec5240d9cda97bc72359a72c0"></script>
+  <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark">
+  <script>initTheme();</script>
+</head>
+<body class="fixed-top-nav">
+  <header>
+    <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation">
+      <div class="container">
+        <a class="navbar-brand title font-weight-lighter" href="/"><span class="font-weight-bold">Geonwoo</span> Lee</a>
+        <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar top-bar"></span><span class="icon-bar middle-bar"></span><span class="icon-bar bottom-bar"></span>
+        </button>
+        <div class="collapse navbar-collapse text-right" id="navbarNav">
+          <ul class="navbar-nav ml-auto flex-nowrap">
+            <li class="nav-item"><a class="nav-link" href="/">about</a></li>
+            <li class="nav-item"><a class="nav-link" href="https://chocoboy.tistory.com/">blog</a></li>
+            <li class="nav-item"><a class="nav-link" href="/projects/6_project/">chat</a></li>
+            <li class="nav-item active"><a class="nav-link" href="/projects/">projects <span class="sr-only">(current)</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="/assets/pdf/GeonwooLee_CV.pdf">cv</a></li>
+            <li class="toggle-container">
+              <button id="light-toggle" title="Change theme" aria-label="Change color theme">
+                <i class="ti ti-sun-moon" id="light-toggle-system"></i><i class="ti ti-moon-filled" id="light-toggle-dark"></i><i class="ti ti-sun-filled" id="light-toggle-light"></i>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <progress id="progress" value="0"><span class="progress-bar"></span></progress>
+  </header>
+
+  <main class="container mt-5 rag-project" role="main">
+    <nav class="rag-breadcrumb" aria-label="Breadcrumb"><a href="/projects/">Projects</a><span aria-hidden="true">/</span><span>RAG Retrieval Optimization</span></nav>
+
+    <section class="rag-hero" aria-labelledby="project-title">
+      <div>
+        <p class="rag-eyebrow">Independent Technical Report · 2026</p>
+        <h1 id="project-title">Domain-Specific RAG Retrieval Optimization</h1>
+        <p class="rag-lede">Improving expected-evidence coverage for compound technical questions through hybrid retrieval, query decomposition, cross-encoder reranking, and source-aware context selection.</p>
+        <div class="rag-tags" aria-label="Project topics"><span class="rag-tag">RAG</span><span class="rag-tag">Information Retrieval</span><span class="rag-tag">LLMs</span><span class="rag-tag">Qdrant</span></div>
+        <div class="rag-actions">
+          <a class="rag-button primary" href="/assets/pdf/RAG_Technical_Report_Independent_Geonwoo_Lee.pdf" target="_blank" rel="noopener">Read the technical report <span aria-hidden="true">↗</span></a>
+          <a class="rag-button secondary" href="#results">View results</a>
+        </div>
+      </div>
+      <a class="rag-cover" href="/assets/pdf/RAG_Technical_Report_Independent_Geonwoo_Lee.pdf" target="_blank" rel="noopener" aria-label="Open the full RAG technical report PDF">
+        <img src="/assets/img/rag-technical-report-cover.png" alt="First page of the independent RAG technical report" width="935" height="1210">
+      </a>
+    </section>
+
+    <section class="rag-section" aria-labelledby="overview-heading">
+      <div class="rag-section-heading">
+        <span>Research overview</span>
+        <h2 id="overview-heading">Better coverage for multi-hop questions</h2>
+        <p>A single embedding can overemphasize one part of a compound question and miss evidence located elsewhere in the documentation. This project redesigned retrieval so that each evidence need contributes candidates before the final context is assembled.</p>
+      </div>
+      <div class="rag-metrics">
+        <div class="rag-metric"><strong>91.08%</strong><span>Final Recall@20 expected-evidence coverage</span></div>
+        <div class="rag-metric"><strong>+27.83 pp</strong><span>Absolute improvement over the baseline</span></div>
+        <div class="rag-metric"><strong>1,000</strong><span>Questions completed in an operational run with zero top-level errors</span></div>
+      </div>
+    </section>
+
+    <section class="rag-section" aria-labelledby="method-heading">
+      <div class="rag-section-heading">
+        <span>Methodology</span>
+        <h2 id="method-heading">A four-stage retrieval strategy</h2>
+        <p>The interventions are cumulative: broaden the candidate pool, improve relevance ordering, then pack a diverse set of evidence into the generation context.</p>
+      </div>
+      <div class="rag-pipeline">
+        <article class="rag-stage"><b>01</b><h3>Query decomposition</h3><p>Split complex requests into one to three focused subqueries so each requirement can retrieve supporting evidence.</p></article>
+        <article class="rag-stage"><b>02</b><h3>Hybrid retrieval</h3><p>Combine dense GTE embeddings and sparse keyword features in Qdrant using reciprocal-rank fusion.</p></article>
+        <article class="rag-stage"><b>03</b><h3>Cross-encoder reranking</h3><p>Use a Qwen-based cross-encoder to jointly assess each query-candidate pair and reorder the pool.</p></article>
+        <article class="rag-stage"><b>04</b><h3>Source-aware packing</h3><p>Build the final context from multiple relevant sources instead of allowing one manual or section to dominate.</p></article>
+      </div>
+    </section>
+
+    <section class="rag-section" id="results" aria-labelledby="results-heading">
+      <div class="rag-section-heading">
+        <span>Results</span>
+        <h2 id="results-heading">Recall@20 increased at every stage</h2>
+        <p>The benchmark measures whether expected evidence was retrieved within the top 20 chunks. It does not, by itself, measure final-answer correctness or faithfulness.</p>
+      </div>
+      <div class="rag-chart" role="img" aria-label="Recall at 20 increased from 63.25 percent at baseline to 75.83 percent after query decomposition, 88.17 percent after reranking, and 91.08 percent after source-aware context packing.">
+        <div class="rag-chart-row"><span class="rag-chart-label">Baseline hybrid retrieval</span><div class="rag-chart-track"><div class="rag-chart-bar" style="width:63.25%"></div></div><span class="rag-chart-value">63.25%</span></div>
+        <div class="rag-chart-row"><span class="rag-chart-label">+ Query decomposition</span><div class="rag-chart-track"><div class="rag-chart-bar" style="width:75.83%"></div></div><span class="rag-chart-value">75.83%</span></div>
+        <div class="rag-chart-row"><span class="rag-chart-label">+ Cross-encoder reranking</span><div class="rag-chart-track"><div class="rag-chart-bar" style="width:88.17%"></div></div><span class="rag-chart-value">88.17%</span></div>
+        <div class="rag-chart-row"><span class="rag-chart-label">+ Source-aware packing</span><div class="rag-chart-track"><div class="rag-chart-bar" style="width:91.08%"></div></div><span class="rag-chart-value">91.08%</span></div>
+      </div>
+      <p class="rag-note"><strong>Interpretation:</strong> Recall@20 improved by 27.83 percentage points, a 44.0% relative gain. The evidence supports a claim of improved retrieval coverage—not a claim of a 28% improvement in answer accuracy.</p>
+    </section>
+
+    <section class="rag-section" aria-labelledby="additional-heading">
+      <div class="rag-section-heading">
+        <span>Additional evaluation</span>
+        <h2 id="additional-heading">Configuration and reliability findings</h2>
+      </div>
+      <div class="rag-findings">
+        <article class="rag-finding"><h3>Chunk-size ablation</h3><p>A 30-question experiment compared maximum chunk sizes from 1,200 to 5,000 tokens. The 2,500-token setting achieved the highest mean top-100 retrieval score, 0.9278, with complete expected evidence for 25 of 30 questions.</p></article>
+        <article class="rag-finding"><h3>Operational run</h3><p>A 1,000-question batch completed with zero top-level errors and an average reported source count of 4.79 per answer. One debug-stage retrieval failure was recorded, with zero debug-stage generation failures.</p></article>
+        <article class="rag-finding"><h3>Key limitation</h3><p>The available experiments do not quantify end-to-end answer accuracy, hallucination rate, faithfulness, citation precision, latency, or cost. Those remain important next-step evaluations.</p></article>
+        <article class="rag-finding"><h3>Research outlook</h3><p>A structured ontology could guide decomposition, detect missing subquestion coverage, and verify that selected evidence spans the required domain concepts before answer synthesis.</p></article>
+      </div>
+    </section>
+
+    <section class="rag-section rag-report-cta" aria-labelledby="report-heading">
+      <div><h2 id="report-heading">Read the full technical report</h2><p>Six pages · Independently authored · Prepared November 2026</p></div>
+      <a class="rag-button" href="/assets/pdf/RAG_Technical_Report_Independent_Geonwoo_Lee.pdf" target="_blank" rel="noopener">Open PDF <span aria-hidden="true">↗</span></a>
+    </section>
+  </main>
+
+  <footer class="fixed-bottom" role="contentinfo"><div class="container mt-0">© Copyright 2026 Geonwoo Lee</div></footer>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="/assets/js/bootstrap.bundle.min.js"></script>
+  <script defer src="/assets/js/common.js?v=20260929-portfolio2"></script>
+  <script type="text/javascript">function progressBarSetup(){"max"in document.createElement("progress")?(initializeProgressElement(),$(document).on("scroll",function(){progressBar.attr({value:getCurrentScrollPosition()})}),$(window).on("resize",initializeProgressElement)):(resizeProgressBar(),$(document).on("scroll",resizeProgressBar),$(window).on("resize",resizeProgressBar))}function getCurrentScrollPosition(){return $(window).scrollTop()}function initializeProgressElement(){let e=$("#navbar").outerHeight(!0);$("body").css({"padding-top":e}),progressBar.css({top:e}),progressBar.attr({max:getDistanceToScroll(),value:getCurrentScrollPosition()})}function getDistanceToScroll(){return $(document).height()-$(window).height()}function resizeProgressBar(){progressBar.css({width:getWidthPercentage()+"%"})}function getWidthPercentage(){return getCurrentScrollPosition()/getDistanceToScroll()*100}const progressBar=$("#progress");window.onload=function(){setTimeout(progressBarSetup,50)};</script>
+</body>
+</html>
