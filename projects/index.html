@@ -31,7 +31,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon-v3.png">
 <link rel="stylesheet"
 	href="/assets/css/main.css?d41d8cd98f00b204e9800998ecf8427e">
-    <link rel="stylesheet" href="/assets/css/portfolio-refresh.css?v=20261115-rag3">
+    <link rel="stylesheet" href="/assets/css/portfolio-refresh.css?v=20261115-projects4">
 <link rel="canonical" href="https://jamesonthehill.github.io/projects/">
 <script src="/assets/js/theme.js?9a0c749ec5240d9cda97bc72359a72c0"></script>
 <link defer rel="stylesheet"
@@ -46,7 +46,7 @@
 	    opacity: 0.5;
 	}
 </style>
-<body class="fixed-top-nav ">
+<body class="fixed-top-nav projects-page">
 	<header>
     <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation">
         <div class="container">
@@ -125,19 +125,21 @@
     </progress>
 </header>
 	<div class="container mt-5" role="main">
-		<header class="post-header">
+		<header class="post-header projects-hero">
+			<p class="projects-eyebrow">Selected work · 2021–2026</p>
 			<h1 class="post-title">projects</h1>
-			<p class="post-description">No Pain, No Gain</p>
+			<p class="post-description">Research systems, full-stack products, creative engineering, and community work—built to turn complex ideas into useful experiences.</p>
+			<div class="projects-hero-tags" aria-label="Project areas"><span>AI &amp; Retrieval</span><span>Full-stack</span><span>Cloud</span><span>Human-centered design</span></div>
 		</header>
 		<article>
 			<div class="projects">
 				<a id="work" href=".#work">
-					<h2 class="category">work</h2>
+					<h2 class="category">Selected work</h2>
 				</a>
 				<div class="row row-cols-1 row-cols-md-3">
 					<div class="col">
 						<a href="/projects/rag-retrieval-optimization/">
-							<div class="card h-100 hoverable">
+							<div class="card h-100 hoverable project-showcase-card project-rag-card">
 								<figure>
 									<picture>
 										<img src="/assets/img/rag-retrieval-optimization.svg" class="card-img-top"
@@ -146,6 +148,7 @@
 									</picture>
 								</figure>
 								<div class="card-body">
+									<div class="project-card-meta"><span>Independent research</span><span>2026&nbsp; ↗</span></div>
 									<h2 class="card-title">Domain-Specific RAG Retrieval Optimization</h2>
 									<p class="card-text">Independent technical report on hybrid retrieval, query decomposition, cross-encoder reranking, and source-aware context selection.</p>
 									<div class="project-card-tags" aria-label="Project topics">
@@ -156,7 +159,7 @@
 						</a>
 					</div>
 					<div class="col">
-						<div class="card h-100 disable">
+						<div class="card h-100 disable project-showcase-card project-private-card">
 							<figure>
 								<picture>
 									<img src="/assets/img/QA.png" class="card-img-top"
@@ -166,6 +169,7 @@
 								</picture>
 							</figure>
 							<div class="card-body">
+								<div class="project-card-meta"><span>Enterprise QA</span><span class="project-nda-badge">NDA</span></div>
 								<h2 class="card-title">QA</h2>
 								<p class="card-text">Details are under a non-disclosure agreement and cannot be publicly shared</p>
 								<div class="row ml-1 mr-1 p-0"></div>
@@ -174,7 +178,7 @@
 					</div>
 					<div class="col">
 						<a href="/projects/7_project/">
-							<div class="card h-100 hoverable">
+							<div class="card h-100 hoverable project-showcase-card project-heybuddy-card">
 								<figure>
 									<picture>
 										<img src="/assets/img/Hey_buddy_Login.png" class="card-img-top" width="100%"
@@ -183,15 +187,16 @@
 									</picture>
 								</figure>
 								<div class="card-body">
+									<div class="project-card-meta"><span>Collaboration platform</span><span>2022&nbsp; ↗</span></div>
 									<h2 class="card-title">Hey, Buddy</h2>
 									<p class="card-text">A Collaboration Enhancement Platform with Integrated APIs and Advanced Web Technologies on AWS EC2</p>
-									<div class="row ml-1 mr-1 p-0"></div>
+									<div class="project-card-tags"><span>Spring</span><span>WebRTC</span><span>AWS</span></div>
 								</div>
 							</div>
 						</a>
 					</div>
 					<div class="col">
-						<div class="card h-100 disable">
+						<div class="card h-100 disable project-showcase-card project-private-card">
 							<figure>
 								<picture>
 									<img src="/assets/img/o2platform.png" class="card-img-top" width="100%"
@@ -200,6 +205,7 @@
 								</picture>
 							</figure>
 							<div class="card-body">
+								<div class="project-card-meta"><span>Learning platform</span><span class="project-nda-badge">NDA</span></div>
 								<h2 class="card-title">Reference Web Tutorial</h2>
 								<p class="card-text">Details are under a non-disclosure agreement and cannot be publicly shared</p>
 								<div class="row ml-1 mr-1 p-0"></div>
@@ -208,27 +214,26 @@
 					</div>
 					<div class="col">
 						<a href="/projects/8_project/">
-							<div class="card h-100 hoverable">
+							<div class="card h-100 hoverable project-showcase-card project-today-card">
 								<figure>
 									<picture>
 										<img src="/assets/img/today_house.png" class="card-img-top" width="100%"
 											 height="auto" alt="project thumbnail" loading="eager"
 											 onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
 									</picture>
-
-									</picture>
 								</figure>
 								<div class="card-body">
+									<div class="project-card-meta"><span>Admin platform</span><span>2022&nbsp; ↗</span></div>
 									<h2 class="card-title">Today's house</h2>
-									<p class="card-text">Interior Platform Web Development</p>
-									<div class="row ml-1 mr-1 p-0"></div>
+									<p class="card-text">A full-stack administration system for identity, user data, social login, and real-time management.</p>
+									<div class="project-card-tags"><span>MySQL</span><span>OAuth</span><span>CRUD</span></div>
 								</div>
 							</div>
 						</a>
 					</div>
 					<div class="col">
 						<a href="/projects/3_project/">
-							<div class="card h-100 hoverable">
+							<div class="card h-100 hoverable project-showcase-card project-game-card">
 								<figure>
 									<picture>
 										<img src="/assets/img/pacman.png" class="card-img-top" width="100%"
@@ -237,21 +242,22 @@
 									</picture>
 								</figure>
 								<div class="card-body">
+									<div class="project-card-meta"><span>Game engineering</span><span>2021&nbsp; ↗</span></div>
 									<h2 class="card-title">Digital Currency Mining Game</h2>
-									<p class="card-text">Dogecoin Mining, and Mars Mission</p>
-									<div class="row ml-1 mr-1 p-0"></div>
+									<p class="card-text">A playful WPF maze game combining Dogecoin mining, collision logic, and a Mars mission narrative.</p>
+									<div class="project-card-tags"><span>C#</span><span>WPF</span><span>Game design</span></div>
 								</div>
 							</div>
 						</a>
 					</div>
 				</div>
 				<a id="fun" href=".#fun">
-					<h2 class="category">fun</h2>
+					<h2 class="category">Community &amp; experiments</h2>
 				</a>
 				<div class="row row-cols-1 row-cols-md-3">
 					<div class="col">
 						<a href="/projects/4_project/">
-							<div class="card h-100 hoverable">
+							<div class="card h-100 hoverable project-showcase-card project-mentoring-card">
 								<figure>
 									<picture>
 										<img src="/assets/img/mento.png" class="card-img-top" width="100%"
@@ -260,9 +266,10 @@
 									</picture>
 								</figure>
 								<div class="card-body">
+									<div class="project-card-meta"><span>Community</span><span>2023&nbsp; ↗</span></div>
 									<h2 class="card-title">Mentoring</h2>
-									<p class="card-text">Mentoring at Eulji University</p>
-									<div class="row ml-1 mr-1 p-0"></div>
+									<p class="card-text">Career and software-engineering mentorship for students at Eulji University.</p>
+									<div class="project-card-tags"><span>Leadership</span><span>Education</span><span>Career</span></div>
 								</div>
 							</div>
 						</a>
