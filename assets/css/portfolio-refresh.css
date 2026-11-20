@@ -376,6 +376,15 @@ body :focus-visible { outline: 3px solid color-mix(in srgb,var(--pf-accent) 70%,
   .interactive-tilt,.magnetic-target { transform: none !important; }
 }
 
+/* The bundled Bootstrap stylesheet only provides navbar-expand-sm. */
+@media (min-width: 768px) {
+  #navbar.navbar-expand-md > .container { flex-wrap: nowrap; }
+  #navbar.navbar-expand-md .navbar-collapse { display: flex !important; flex-basis: auto; }
+  #navbar.navbar-expand-md .navbar-nav { flex-direction: row; }
+  #navbar.navbar-expand-md .navbar-nav .dropdown-menu { position: absolute; }
+  #navbar.navbar-expand-md .navbar-toggler { display: none; }
+}
+
 @media (max-width: 767px) {
   body.fixed-top-nav { padding-top: 70px !important; }
   header > #navbar.navbar { min-height: 64px; padding: .55rem .4rem !important; }
