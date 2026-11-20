@@ -4,6 +4,12 @@ import "./current-affairs.css";
 const REGIONS = { world: "World", us: "United States", kr: "South Korea" };
 type Region = keyof typeof REGIONS;
 
+const NEWS_SEARCH = {
+    world: "https://news.google.com/topics/CAAqKggKIiRDQkFTRlFvSUwyMHZNRGx1YlY4U0JXVnVMVlZUR2dKVlV5Z0FQAQ?hl=en-US&gl=US&ceid=US%3Aen",
+    us: "https://news.google.com/search?q=United%20States%20when%3A2d&hl=en-US&gl=US&ceid=US%3Aen",
+    kr: "https://news.google.com/search?q=%22South%20Korea%22%20when%3A2d&hl=en-US&gl=US&ceid=US%3Aen",
+};
+
 type Article = {
     title: string;
     url: string;
@@ -38,17 +44,23 @@ export default function CurrentAffairs({ backendUrl }: { backendUrl: string }) {
         setEdition((previous) => previous?.region === nextRegion ? previous : null);
         setLoading(true);
         setError("");
+        const unavailable = "Couldn’t load headlines. Try refreshing in a moment.";
         try {
             if (!backendUrl) throw new Error("News service unavailable");
             const url = new URL("/api/current-affairs", new URL(backendUrl, window.location.href));
             url.searchParams.set("region", nextRegion);
             if (refresh) url.searchParams.set("refresh", "1");
             const response = await fetch(url, { signal: controller.signal });
-            if (!response.ok) throw new Error("News service unavailable");
-            const data: Edition = await response.json();
+            const data = await response.json();
+            if (!response.ok) {
+                if (request.current === controller) {
+                    setError(data.code === "news_not_configured" ? "The in-page headline feed is awaiting setup." : unavailable);
+                }
+                return;
+            }
             if (request.current === controller) setEdition(data);
         } catch {
-            if (request.current === controller) setError("Couldn’t load headlines. Try refreshing in a moment.");
+            if (request.current === controller) setError(unavailable);
         } finally {
             window.clearTimeout(timeout);
             if (request.current === controller) setLoading(false);
@@ -92,11 +104,15 @@ export default function CurrentAffairs({ backendUrl }: { backendUrl: string }) {
                 {!loading && error}
                 {!loading && !error && edition && (
                     edition.articles.length ? <>
-                        {edition.stale ? "Showing the last available edition · " : "Updated "}
+                        {edition.stale ? "Showing the last available edition · " : "Feed checked "}
                         <time dateTime={edition.generated_at}>{formatDate(edition.generated_at)}</time>
                     </> : "No recent English-language headlines found for this region."
                 )}
             </div>
+            {!loading && (error || !edition?.articles.length) && <a className="current-affairs-external"
+                href={NEWS_SEARCH[region]} target="_blank" rel="noopener noreferrer">
+                Browse {REGIONS[region]} headlines on Google News ↗
+            </a>}
             <ul className="current-affairs-stories" aria-label={`${REGIONS[region]} headlines`}>
                 {edition?.articles.map((article) => (
                     <li key={article.url}>

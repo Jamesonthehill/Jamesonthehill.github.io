@@ -104,6 +104,8 @@
     margin: 5px 0;
 }
 
+.current-affairs-external,
+.current-affairs-external:hover,
 .current-affairs-stories a,
 .current-affairs-stories a:hover {
     color: var(--ink);
