@@ -54,6 +54,13 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!navList.querySelector('a[href="/priorities/"]')) {
       addNavItem("Schedule", "/priorities/");
     }
+    if (!navList.querySelector('a[href="/current-affairs/"]')) {
+      addNavItem("Current Affairs", "/current-affairs/");
+    }
+    var navbar = navList.closest("#navbar");
+    if (navbar.querySelector(".navbar-toggler")) {
+      navbar.classList.replace("navbar-expand-sm", "navbar-expand-md");
+    }
   }
 
   if (window.location.pathname === "/" || window.location.pathname === "/index.html") {

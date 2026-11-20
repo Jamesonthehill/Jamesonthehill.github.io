@@ -2,7 +2,6 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { AtomLoader, ChatTutorial } from "./LocalChatDesign";
 import { useServerReadiness } from "./useServerReadiness";
 import GuidedPdfPreview from "./GuidedPdfPreview";
-import CurrentAffairs from "./CurrentAffairs";
 import "./guided-demo.css";
 
 type TutorMode = "jarvis" | "socrates";
@@ -250,7 +249,6 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
                         <button disabled={busy || (!!session && !serverReady)} aria-pressed={mode === "jarvis"} onClick={() => switchMode("jarvis")}>Jarvis</button>
                         <button disabled={busy || (!!session && !serverReady)} aria-pressed={mode === "socrates"} onClick={() => switchMode("socrates")}>Socrates</button>
                     </div>
-                    <CurrentAffairs backendUrl={backendUrl} />
                     <button data-guided-tour="tutorial" onClick={() => {setMaterials(false);setTutorial(true);}}>Tutorial</button>
                     <button className="guided-expand" aria-label={fullscreen ? "Exit fullscreen" : "Expand chat"} aria-pressed={fullscreen} onClick={() => setFullscreen(!fullscreen)}>{fullscreen ? "⤢" : "⛶"}</button>
                 </div>

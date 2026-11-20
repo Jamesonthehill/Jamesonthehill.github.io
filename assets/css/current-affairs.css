@@ -1,0 +1,88 @@
+.current-affairs-page .post-header {
+    margin-bottom: 2rem !important;
+}
+
+.current-affairs-panel {
+    background: var(--pf-surface);
+    border: 1px solid var(--pf-line);
+    border-radius: var(--pf-radius);
+    padding: clamp(16px, 4vw, 32px);
+}
+
+.current-affairs-controls,
+.current-affairs-regions,
+.current-affairs-story-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+}
+
+.current-affairs-controls {
+    justify-content: space-between;
+}
+
+.current-affairs-panel button {
+    padding: 7px 13px;
+    color: var(--pf-ink);
+    background: var(--pf-surface-soft);
+    border: 1px solid var(--pf-line);
+    border-radius: 8px;
+    font: inherit;
+    font-size: .86rem;
+    font-weight: 650;
+}
+
+.current-affairs-panel button[aria-pressed="true"] {
+    background: var(--pf-accent-soft);
+    border-color: var(--pf-accent);
+}
+
+.current-affairs-panel button:disabled {
+    opacity: .65;
+}
+
+.current-affairs-panel .current-affairs-status,
+.current-affairs-story-meta {
+    color: var(--pf-muted);
+    font-size: .82rem;
+}
+
+.current-affairs-status {
+    min-height: 1.3rem;
+    margin: 14px 0 8px;
+}
+
+.current-affairs-stories {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.current-affairs-stories li {
+    border-top: 1px solid var(--pf-line);
+    padding: 16px 0;
+}
+
+.current-affairs-stories li:last-child {
+    padding-bottom: 0;
+}
+
+.current-affairs-stories h2 {
+    font-size: 1.13rem !important;
+    line-height: 1.45;
+    margin: 5px 0;
+}
+
+.current-affairs-external,
+.current-affairs-stories h2 a {
+    color: var(--pf-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.current-affairs-stories p {
+    color: var(--pf-muted);
+    font-size: .92rem;
+    margin: 0;
+}

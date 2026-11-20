@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Current Affairs | Geonwoo Lee</title>
+    <meta name="description" content="English-language headlines from around the world, the United States, and South Korea.">
+    <link rel="canonical" href="https://jamesonthehill.com/current-affairs/">
+    <link rel="icon" href="/assets/img/favicon-v4.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/apple-touch-icon-v3.png">
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/portfolio-refresh.css">
+    <link rel="stylesheet" href="/assets/css/current-affairs.css?v=1">
+    <link rel="stylesheet" media="none" id="highlight_theme_light" href="/assets/css/jekyll-pygments-themes-github.css">
+    <link rel="stylesheet" media="none" id="highlight_theme_dark" href="/assets/css/jekyll-pygments-themes-native.css">
+    <script src="/assets/js/theme.js"></script>
+    <script>initTheme();</script>
+</head>
+<body class="fixed-top-nav">
+    <header>
+        <nav id="navbar" class="navbar navbar-light navbar-expand-md fixed-top" aria-label="Primary">
+            <div class="container">
+                <a class="navbar-brand title" href="/" aria-label="Geonwoo Lee — home">Geonwoo Lee</a>
+                <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse"
+                    data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="icon-bar top-bar"></span>
+                    <span class="icon-bar middle-bar"></span>
+                    <span class="icon-bar bottom-bar"></span>
+                </button>
+                <div class="collapse navbar-collapse text-right" id="navbarNav">
+                    <ul class="navbar-nav ml-auto flex-nowrap">
+                        <li class="nav-item"><a class="nav-link" href="/">about</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/projects/6_project/">chat</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/projects/">projects</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/assets/pdf/GeonwooLee_CV.pdf">cv</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/priorities/">Schedule</a></li>
+                        <li class="nav-item active"><a class="nav-link" href="/current-affairs/" aria-current="page">Current Affairs</a></li>
+                        <li class="toggle-container"><button id="light-toggle" type="button" aria-label="Change theme">◒</button></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main class="container current-affairs-page" role="main">
+        <header class="post-header">
+            <h1 class="post-title">Current Affairs</h1>
+            <p class="post-description">English-language headlines from around the world, the United States, and South Korea.</p>
+        </header>
+        <section class="current-affairs-panel" aria-label="Latest headlines">
+            <div class="current-affairs-controls">
+                <div class="current-affairs-regions" role="group" aria-label="Headline region">
+                    <button type="button" data-region="world" aria-pressed="true">World</button>
+                    <button type="button" data-region="us" aria-pressed="false">United States</button>
+                    <button type="button" data-region="kr" aria-pressed="false">South Korea</button>
+                </div>
+                <button type="button" id="current-affairs-refresh">Refresh</button>
+            </div>
+            <p class="current-affairs-status" role="status"></p>
+            <a class="current-affairs-external" target="_blank" rel="noopener noreferrer" hidden></a>
+            <ul class="current-affairs-stories" aria-label="World headlines"></ul>
+        </section>
+    </main>
+    <script defer src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script defer src="/assets/js/bootstrap.bundle.min.js"></script>
+    <script defer src="/assets/js/common.js?v=current-affairs-nav"></script>
+    <script type="module" src="/assets/js/current-affairs.js?v=1"></script>
+</body>
+</html>
