@@ -2,6 +2,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { AtomLoader, ChatTutorial } from "./LocalChatDesign";
 import { useServerReadiness } from "./useServerReadiness";
 import GuidedPdfPreview from "./GuidedPdfPreview";
+import CurrentAffairs from "./CurrentAffairs";
 import "./guided-demo.css";
 
 type TutorMode = "jarvis" | "socrates";
@@ -238,7 +239,22 @@ export default function GuidedDemo({ backendUrl }: { backendUrl: string }) {
             </>}
         </aside>
         <section className="guided-chat" aria-label="Guided Socratic conversation">
-            <header className="guided-chat-heading"><span className="guided-tool-icon" aria-hidden="true"><img src={`/assets/chat-widget/avatars/${mode}.jpg`} alt="" width={43} height={43} /></span><div><h2>{mode === "jarvis" ? "Jarvis" : "Socrates"}</h2><p>{mode === "jarvis" ? "Friendly questions grounded in your documents." : "Guided questions grounded in your documents."}</p></div><div className="guided-header-actions"><div className="guided-mode-switch" role="group" aria-label="Tutor mode"><button disabled={busy || (!!session && !serverReady)} aria-pressed={mode === "jarvis"} onClick={() => switchMode("jarvis")}>Jarvis</button><button disabled={busy || (!!session && !serverReady)} aria-pressed={mode === "socrates"} onClick={() => switchMode("socrates")}>Socrates</button></div><button data-guided-tour="tutorial" onClick={() => {setMaterials(false);setTutorial(true);}}>Tutorial</button><button className="guided-expand" aria-label={fullscreen ? "Exit fullscreen" : "Expand chat"} aria-pressed={fullscreen} onClick={() => setFullscreen(!fullscreen)}>{fullscreen ? "⤢" : "⛶"}</button></div></header>
+            <header className="guided-chat-heading">
+                <span className="guided-tool-icon" aria-hidden="true"><img src={`/assets/chat-widget/avatars/${mode}.jpg`} alt="" width={43} height={43} /></span>
+                <div>
+                    <h2>{mode === "jarvis" ? "Jarvis" : "Socrates"}</h2>
+                    <p>{mode === "jarvis" ? "Friendly questions grounded in your documents." : "Guided questions grounded in your documents."}</p>
+                </div>
+                <div className="guided-header-actions">
+                    <div className="guided-mode-switch" role="group" aria-label="Tutor mode">
+                        <button disabled={busy || (!!session && !serverReady)} aria-pressed={mode === "jarvis"} onClick={() => switchMode("jarvis")}>Jarvis</button>
+                        <button disabled={busy || (!!session && !serverReady)} aria-pressed={mode === "socrates"} onClick={() => switchMode("socrates")}>Socrates</button>
+                    </div>
+                    <CurrentAffairs backendUrl={backendUrl} />
+                    <button data-guided-tour="tutorial" onClick={() => {setMaterials(false);setTutorial(true);}}>Tutorial</button>
+                    <button className="guided-expand" aria-label={fullscreen ? "Exit fullscreen" : "Expand chat"} aria-pressed={fullscreen} onClick={() => setFullscreen(!fullscreen)}>{fullscreen ? "⤢" : "⛶"}</button>
+                </div>
+            </header>
             <div className="guided-messages" ref={messagesPanel} data-guided-tour="conversation" aria-live="polite">
                 {!session && <div className="guided-intro"><span className="guided-intro-mark"><img src={`/assets/chat-widget/avatars/${mode}.jpg`} alt="" width={52} height={52} /></span><span className="guided-eyebrow">YOUR DOCUMENT. YOUR LEARNING.</span><h1>Start with your document.</h1><p>Upload a document you want to understand. {mode === "jarvis" ? "Jarvis" : "Socrates"} will build a short learning activity from it, explain ideas, and guide you with questions.</p><ol className="guided-start-steps"><li><strong>Start</strong> to connect, then upload your document.</li><li><strong>Explore</strong> its ideas through a scenario and questions.</li><li><strong>Ask for help</strong> whenever something is unclear.</li></ol><div className="guided-start-actions">{serverReady ? <button disabled={busy} onClick={() => fileInput.current?.click()}>＋ Upload document</button> : <button disabled={server.status === "checking"} onClick={() => void server.start()}>{server.status === "checking" ? "Connecting…" : server.status === "error" ? "Retry connection" : "Start"}</button>}<button className="guided-outline" onClick={() => setTutorial(true)}>Tutorial</button></div>{server.status === "checking" && <AtomLoader title="Connecting to your tutor" message={server.slow ? "The server is waking up—thanks for waiting. You can explore the tutorial while it starts." : "Checking the server. You can explore the tutorial while we connect."} />}{server.status === "error" && <p className="guided-error" role="alert">The server is taking longer than expected. Please retry the connection.</p>}{serverReady && <p className="guided-server-ready" role="status">✓ Connected. You can upload your document.</p>}<span className="guided-intro-note">Choose Jarvis for a friendly tone or Socrates for a formal tone. Both use your document.</span></div>}
                 {session && !serverReady && <div className="guided-reconnect">

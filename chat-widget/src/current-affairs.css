@@ -1,0 +1,118 @@
+.guided-header-actions > .current-affairs-trigger {
+    background: var(--lavender);
+    color: var(--ink);
+    box-shadow: none;
+    border: 1px solid var(--border);
+}
+
+.current-affairs-dialog {
+    width: min(720px, calc(100% - 24px));
+    max-height: min(85dvh, 760px);
+    padding: clamp(16px, 4vw, 30px);
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 24px 80px #06071555;
+    overscroll-behavior: contain;
+}
+
+.current-affairs-dialog::backdrop {
+    background: #0c1027a0;
+}
+
+.current-affairs-header,
+.current-affairs-controls,
+.current-affairs-regions,
+.current-affairs-story-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+}
+
+.current-affairs-header,
+.current-affairs-controls {
+    justify-content: space-between;
+}
+
+.guided-demo .current-affairs-header h2 {
+    margin: 0;
+    font-size: clamp(21px, 5vw, 29px) !important;
+}
+
+.current-affairs-controls {
+    margin-top: 18px;
+    gap: 10px;
+}
+
+.current-affairs-regions {
+    gap: 5px;
+}
+
+.guided-demo .current-affairs-dialog button {
+    padding: 7px 11px;
+    color: var(--ink);
+    background: var(--soft);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: none;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.guided-demo .current-affairs-dialog button[aria-pressed="true"] {
+    background: var(--lavender);
+    border-color: var(--purple);
+}
+
+.guided-demo .current-affairs-dialog .current-affairs-close {
+    font-size: 22px;
+    line-height: 1;
+}
+
+.current-affairs-status {
+    color: var(--muted);
+    font-size: 12px;
+    min-height: 18px;
+    margin: 14px 0 8px;
+}
+
+.current-affairs-stories {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.current-affairs-stories li {
+    border-top: 1px solid var(--border);
+    padding: 12px 0;
+}
+
+.current-affairs-story-meta {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.current-affairs-story-meta span {
+    font-weight: 700;
+}
+
+.guided-demo .current-affairs-stories h3 {
+    font-size: 16px !important;
+    line-height: 1.4;
+    margin: 5px 0;
+}
+
+.current-affairs-stories a,
+.current-affairs-stories a:hover {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.current-affairs-stories p {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0;
+}
